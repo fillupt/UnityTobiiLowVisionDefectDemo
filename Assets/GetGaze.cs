@@ -2,6 +2,7 @@
 using Tobii.Gaming;
 using UnityEngine;
 using Wilberforce.FinalVignette;
+using UnityEngine.UI;
 
 public class GetGaze : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class GetGaze : MonoBehaviour
     private int currSim;
     private float maxCatAlpha = 0.99f;
     private float minCatAlpha = 0.1f;
+    public Toggle aT, cT, gT;
+
     private void Start()
     {
         cam       = Camera.main;
@@ -38,7 +41,7 @@ public class GetGaze : MonoBehaviour
             theVig.VignetteInnerColor.a = 0f;
             theVig.VignetteOuterColor.a = 0.0f;
         }
-        if (Input.GetKeyUp(KeyCode.G)) //glaucoma
+        if (Input.GetKeyUp(KeyCode.G) && gT.isOn) //glaucoma
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 0;
@@ -52,7 +55,7 @@ public class GetGaze : MonoBehaviour
             theVig.VignetteOuterValueDistance = 1.5f;
         }
 
-        if (Input.GetKeyUp(KeyCode.C)) //cataract
+        if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 2;
@@ -66,7 +69,7 @@ public class GetGaze : MonoBehaviour
             theVig.VignetteOuterValueDistance = 1.5f;
         }
 
-        if (Input.GetKeyUp(KeyCode.A))//AMD
+        if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 1;
