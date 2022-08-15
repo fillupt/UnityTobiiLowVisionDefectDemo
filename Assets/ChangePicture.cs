@@ -40,7 +40,7 @@ public class ChangePicture : MonoBehaviour
 
     private void LoadImages()
     {
-        string fold = EditorUtility.OpenFolderPanel("Select Image Directory", Application.dataPath, "");
+        string fold = EditorUtility.OpenFolderPanel("Select Image Directory", Application.dataPath + "/images", "");
         if (fold != "")
         {
             var fileInfo = Directory.GetFiles(fold, "*.png");

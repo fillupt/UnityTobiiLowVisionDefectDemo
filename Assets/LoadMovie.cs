@@ -24,7 +24,7 @@ public class LoadMovie : MonoBehaviour
 
     private void LoadMovies()
     {
-        string movFile = EditorUtility.OpenFilePanel("Select Movie File", Application.dataPath, "mov");
+        string movFile = EditorUtility.OpenFilePanel("Select Movie File", Application.dataPath + "/movie", "mp4");
         if (movFile != "")
         {           
             theScreen.GetComponent<VideoPlayer>().url = movFile;

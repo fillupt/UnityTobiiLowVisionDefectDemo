@@ -13,6 +13,7 @@ public class startLVSim : MonoBehaviour
     public GameObject ws;
     public VideoPlayer vp;
     public Image defaultImage;
+    public SpriteRenderer VPlogo;
     public ParticleSystem floaters;
 
     void Start()
@@ -33,6 +34,7 @@ public class startLVSim : MonoBehaviour
         floaters.Stop();
         ws.SetActive(false);
         gg.enabled = true;
+        VPlogo.enabled = false;
 
         if (lm.movieLoaded)
         {

@@ -3,6 +3,7 @@ using Tobii.Gaming;
 using UnityEngine;
 using Wilberforce.FinalVignette;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GetGaze : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class GetGaze : MonoBehaviour
     private int currSim;
     private float maxCatAlpha = 0.99f;
     private float minCatAlpha = 0.1f;
-    public Toggle aT, cT, gT;
+    public Toggle aT, cT, gT ,sT;
 
     private void Start()
     {
@@ -83,6 +84,20 @@ public class GetGaze : MonoBehaviour
             theVig.VignetteOuterValueDistance = 0.5f;
 }
 
+    if (Input.GetKeyUp(KeyCode.S) && sT.isOn) //scotoma
+        {
+            cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
+            currSim = 0;
+            theVig.VignetteInnerColor   = Color.red;
+            theVig.VignetteOuterColor   = Color.red;
+            theVig.VignetteInnerColor.a = 0f; 
+            theVig.VignetteOuterColor.a = 1f; 
+            theVig.VignetteFalloff      = 1f;
+            maxScot = 1.5f;
+            minScot = .05f;
+            theVig.VignetteOuterValueDistance = 1.5f;
+        }
+
         if (Input.GetKey(KeyCode.DownArrow))
         {
             if (currSim ==0 && scotOuter > minScot)
@@ -103,6 +118,11 @@ public class GetGaze : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {  
             Application.Quit();
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {  
+            SceneManager.LoadScene(0);
         }
 
         if (Input.GetKey(KeyCode.UpArrow))
