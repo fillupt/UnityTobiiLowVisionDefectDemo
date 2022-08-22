@@ -387,8 +387,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 7.999996, y: 71.5}
-  m_SizeDelta: {x: 160, y: 20}
+  m_AnchoredPosition: {x: 75, y: 71.5}
+  m_SizeDelta: {x: 300, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &204904719
 MonoBehaviour:
@@ -489,7 +489,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -506,10 +506,10 @@ MonoBehaviour:
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '[S] Scotoma'
+  m_Text: <b>[S]</b> Scotoma (coming soon!)
 --- !u!222 &209192804
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -676,10 +676,10 @@ MonoBehaviour:
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '[A] Dry AMD'
+  m_Text: <b>[A]</b> Dry AMD
 --- !u!222 &334411772
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -723,8 +723,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 7.999996, y: 111.5}
-  m_SizeDelta: {x: 160, y: 20}
+  m_AnchoredPosition: {x: 75, y: 111.5}
+  m_SizeDelta: {x: 300, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &357337299
 MonoBehaviour:
@@ -5712,8 +5712,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 8, y: -9.500002}
-  m_SizeDelta: {x: 160, y: 20}
+  m_AnchoredPosition: {x: 75, y: -9.500002}
+  m_SizeDelta: {x: 300, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &551092147
 MonoBehaviour:
@@ -5753,7 +5753,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1543888465}
   toggleTransition: 1
   graphic: {fileID: 715703091}
@@ -5763,7 +5763,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &715703089
 GameObject:
   m_ObjectHideFlags: 0
@@ -6133,13 +6133,13 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 1
     m_MaxSize: 40
-    m_Alignment: 0
+    m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '[C] Cataract'
+  m_Text: <b>[C]</b> Cataract
 --- !u!222 &869815455
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6497,6 +6497,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1144896021}
   - component: {fileID: 1144896022}
+  - component: {fileID: 1144896023}
   m_Layer: 0
   m_Name: VirtualEyes Logo
   m_TagString: Untagged
@@ -6513,7 +6514,7 @@ Transform:
   m_GameObject: {fileID: 1144896020}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 901.3, y: -467.3, z: -0.5}
-  m_LocalScale: {x: 14, y: 14, z: 4}
+  m_LocalScale: {x: 13.999999, y: 13.999999, z: 4}
   m_Children: []
   m_Father: {fileID: 1902497932}
   m_RootOrder: 0
@@ -6566,6 +6567,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1144896023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144896020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc7c639704ee7ba4dbf108c56ea04f67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1169088870
 GameObject:
   m_ObjectHideFlags: 0
@@ -7000,7 +7013,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22e9810e87806014da82909ce4342821, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  theIms: []
+  theIms:
+  - {fileID: 21300000, guid: 88ab98063228f114a9ac708e70da2fd7, type: 3}
+  - {fileID: 21300000, guid: 2d27db8af1b2ff6419b1e096c196e5d2, type: 3}
+  - {fileID: 21300000, guid: e28aa59aab3fcf743a7e35944a028bdb, type: 3}
+  - {fileID: 21300000, guid: 27f4310b75343454382abb577f5cb2a7, type: 3}
+  - {fileID: 21300000, guid: 60e830122a1da8148a1759fa6329797d, type: 3}
+  - {fileID: 21300000, guid: 5268c0bff6ee2ed42ba79411e321ece4, type: 3}
+  - {fileID: 21300000, guid: 8104b08835d2a37449e281af32eaaaed, type: 3}
+  - {fileID: 21300000, guid: 2df103e6f95c57c459e2a64513244756, type: 3}
+  - {fileID: 21300000, guid: 582af0b1d7b85724fa176fe10889cb8f, type: 3}
   defaultImage: {fileID: 1902497933}
   foldPicBut: {fileID: 1169088872}
   statusText: {fileID: 795366813}
@@ -7079,8 +7101,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 8, y: 31.500002}
-  m_SizeDelta: {x: 160, y: 20}
+  m_AnchoredPosition: {x: 75, y: 31.500002}
+  m_SizeDelta: {x: 300, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1630822427
 MonoBehaviour:
@@ -7165,8 +7187,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 80}
-  m_SizeDelta: {x: 250, y: 120}
+  m_AnchoredPosition: {x: 0, y: 111.5}
+  m_SizeDelta: {x: 270, y: 180}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1706284629
 MonoBehaviour:
@@ -7188,8 +7210,9 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: "[R] Reset\n[1] to [=] for images\n[Up] Lessen severity\n[Down] Increase
-    severity \n[Escape] to Quit"
+  m_text: "<b>[R]</b> Reset\n<b>[1]</b> to <b>[=]</b> for images\n<b>[Up]</b> Lessen
+    severity\n<b>[Down]</b> Increase severity \n<b>[M]</b> to return to the main men</b>u\n<b>[Escape]</b>
+    to Quit"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7234,7 +7257,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 79
+  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -7258,12 +7281,12 @@ MonoBehaviour:
   m_margin: {x: 14.842114, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 1706284629}
-    characterCount: 95
+    characterCount: 126
     spriteCount: 0
-    spaceCount: 16
-    wordCount: 15
+    spaceCount: 23
+    wordCount: 22
     linkCount: 0
-    lineCount: 5
+    lineCount: 6
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -7604,7 +7627,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1902497931}
   m_Enabled: 1
-  m_VideoClip: {fileID: 0}
+  m_VideoClip: {fileID: 32900000, guid: 4405c0de78e538e478bf0593ccda6119, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 963194227}
@@ -7612,17 +7635,19 @@ VideoPlayer:
   m_TimeReference: 0
   m_TargetMaterialRenderer: {fileID: 0}
   m_TargetMaterialProperty: _MainTex
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_AspectRatio: 5
   m_DataSource: 0
   m_PlaybackSpeed: 1
   m_AudioOutputMode: 2
-  m_TargetAudioSources: []
-  m_DirectAudioVolumes: []
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
   m_Url: 
-  m_EnabledAudioTracks: 
-  m_DirectAudioMutes: 
-  m_ControlledAudioTrackCount: 0
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
   m_PlayOnAwake: 0
   m_SkipOnDrop: 1
   m_Looping: 1
@@ -7838,10 +7863,10 @@ MonoBehaviour:
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '[G] Glaucoma'
+  m_Text: <b>[G]</b> Glaucoma
 --- !u!222 &1957298194
 CanvasRenderer:
   m_ObjectHideFlags: 0

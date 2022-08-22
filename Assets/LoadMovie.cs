@@ -19,23 +19,30 @@ public class LoadMovie : MonoBehaviour
 
     void Start()
     {
-        movBut.onClick.AddListener(LoadMovies);
+        movBut.onClick.AddListener(LoadDefaultMovie);
     }
 
-    private void LoadMovies()
-    {
-        string movFile = EditorUtility.OpenFilePanel("Select Movie File", Application.dataPath + "/movie", "mp4");
-        if (movFile != "")
-        {           
-            theScreen.GetComponent<VideoPlayer>().url = movFile;
-            movieLoaded = true;
-            statusText.text = "Movie ready";
+    // private void LoadMovies()
+    // {
+    //     string movFile = EditorUtility.OpenFilePanel("Select Movie File", Application.dataPath + "/movie", "mp4");
+    //     if (movFile != "")
+    //     {           
+    //         theScreen.GetComponent<VideoPlayer>().url = movFile;
+    //         movieLoaded = true;
+    //         statusText.text = "Movie ready";
 
-        }
-        else
-        {
-            statusText.text = "No suitable movie found";
-            movieLoaded = false;
-        }
+    //     }
+    //     else
+    //     {
+    //         statusText.text = "No suitable movie found";
+    //         movieLoaded = false;
+    //     }
+    // }
+
+    private void LoadDefaultMovie()
+    { 
+        //theScreen.GetComponent<VideoPlayer>().url = Application.dataPath + "/movie/" + "VirtualPatientDemoReel.mp4";
+        movieLoaded = true;
+        statusText.text = "Movie ready";
     }
 }

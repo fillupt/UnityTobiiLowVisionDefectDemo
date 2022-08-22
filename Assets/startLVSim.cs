@@ -32,6 +32,7 @@ public class startLVSim : MonoBehaviour
     void Begin()
     {
         floaters.Stop();
+        floaters.Clear();
         ws.SetActive(false);
         gg.enabled = true;
         VPlogo.enabled = false;

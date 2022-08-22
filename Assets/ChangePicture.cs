@@ -34,31 +34,37 @@ public class ChangePicture : MonoBehaviour
 
     private void Start()
     {
-        foldPicBut.onClick.AddListener(LoadImages);
+        foldPicBut.onClick.AddListener(LoadDefaultImages);
         statusText.text = "LV Simulator V" + Application.version;
     }
 
-    private void LoadImages()
-    {
-        string fold = EditorUtility.OpenFolderPanel("Select Image Directory", Application.dataPath + "/images", "");
-        if (fold != "")
-        {
-            var fileInfo = Directory.GetFiles(fold, "*.png");
-            theIms = new Sprite[fileInfo.Length];
+    // private void LoadImages()
+    // {
+    //     string fold = EditorUtility.OpenFolderPanel("Select Image Directory", Application.dataPath + "/images", "");
+    //     if (fold != "")
+    //     {
+    //         var fileInfo = Directory.GetFiles(fold, "*.png");
+    //         theIms = new Sprite[fileInfo.Length];
 
-            for (int i = 0; i < Math.Min(keyCodes.Length, fileInfo.Length); i++)
-            {
-                theIms[i] = LoadNewSprite(fileInfo[i]);
-            }
-            imgLoaded = true;
-            statusText.text = theIms.Length + " images loaded";
+    //         for (int i = 0; i < Math.Min(keyCodes.Length, fileInfo.Length); i++)
+    //         {
+    //             theIms[i] = LoadNewSprite(fileInfo[i]);
+    //         }
+    //         imgLoaded = true;
+    //         statusText.text = theIms.Length + " images loaded";
 
-        }
-        else 
-        { 
-            statusText.text = "No suitable images found"; 
-            imgLoaded = false;
-        }  
+    //     }
+    //     else 
+    //     { 
+    //         statusText.text = "No suitable images found"; 
+    //         imgLoaded = false;
+    //     }  
+    // }
+
+    private void LoadDefaultImages()
+    {  
+        imgLoaded = true;
+        statusText.text = theIms.Length + " images loaded";
     }
 
     public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f)
