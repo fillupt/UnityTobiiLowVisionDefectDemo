@@ -144,7 +144,6 @@ public class GetGaze : MonoBehaviour
                 theVig.VignetteOuterColor.a -= (rateOfChange * Time.deltaTime);
             }
         }
-
         if (TobiiAPI.IsConnected)
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
