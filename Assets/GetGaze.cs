@@ -19,6 +19,7 @@ public class GetGaze : MonoBehaviour
     public float rateOfChange;
     public bool simAbs;
     public Image noUserImage, noEyesImage;
+    public Color noUserColor, noEyesColor;
     private int currSim;
     private float maxCatAlpha = 0.99f;
     private float minCatAlpha = 0.1f;
@@ -35,8 +36,12 @@ public class GetGaze : MonoBehaviour
     void Update()
     {
         scotOuter = theVig.VignetteOuterValueDistance;
-
         simAbs = noUser;
+        // Set noUserImage and noEyesImage to red as default
+        noUserColor = Color.red;
+        noEyesColor = Color.red;
+   
+
         
         if (Input.GetKeyUp(KeyCode.R)) //Reset
         {
@@ -50,7 +55,7 @@ public class GetGaze : MonoBehaviour
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 0;
             theVig.VignetteInnerColor   = Color.black;
-            theVig.VignetteOuterColor   = Color.black;
+            theVig.VignetteOuterColor   = new Color(0.1f, 0.1f, 0.1f, 1f);
             theVig.VignetteInnerColor.a = 0f; 
             theVig.VignetteOuterColor.a = 1f; 
             theVig.VignetteFalloff      = 1f;
@@ -63,7 +68,7 @@ public class GetGaze : MonoBehaviour
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 2;
-            theVig.VignetteInnerColor   = catColour;
+            theVig.VignetteInnerColor   = new Color(.29f, .29f, .15f, 1f);
             theVig.VignetteOuterColor   = catColour;
             theVig.VignetteInnerColor.a = .3f; 
             theVig.VignetteOuterColor.a = .1f; 
@@ -82,9 +87,10 @@ public class GetGaze : MonoBehaviour
             theVig.VignetteInnerColor.a = 1f; 
             theVig.VignetteOuterColor.a = 0.05f;
             theVig.VignetteFalloff      = 2f;
-            maxScot = 1.99f;
+            maxScot = 2f;
             minScot = .2f;
-            theVig.VignetteOuterValueDistance = 0.5f;
+            theVig.VignetteOuterValueDistance = 0.2f;
+            theVig.VignetteInnerValueDistance = 0.01f;
         }
 
     if (Input.GetKeyUp(KeyCode.S) && sT.isOn) //scotoma
@@ -110,6 +116,8 @@ public class GetGaze : MonoBehaviour
             if (currSim == 1 && scotOuter < maxScot) 
             {
                  theVig.VignetteOuterValueDistance += (rateOfChange * Time.deltaTime);
+                 theVig.VignetteInnerValueDistance += (0.2f*rateOfChange * Time.deltaTime);
+
             }
             if (currSim == 2 && theVig.VignetteInnerColor.a < maxCatAlpha)
             {
@@ -133,6 +141,7 @@ public class GetGaze : MonoBehaviour
             if (currSim == 1 && scotOuter > minScot)
             {
                 theVig.VignetteOuterValueDistance -= (rateOfChange * Time.deltaTime);
+                theVig.VignetteInnerValueDistance -= (0.2f*rateOfChange * Time.deltaTime);
             }
 
             if (currSim == 2 && theVig.VignetteInnerColor.a > minCatAlpha)
@@ -144,13 +153,14 @@ public class GetGaze : MonoBehaviour
         if (TobiiAPI.IsConnected)
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
-            if (userPresence.IsUserPresent())
+            if (userPresence.IsUserPresent()) 
             {
+                noUserColor = Color.green;
                 noUserCanvas.SetActive(false);
                 cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
                 noUser = false;
                 GazePoint gazePoint = TobiiAPI.GetGazePoint();
-                HeadPose headPose = TobiiAPI.GetHeadPose();
+                noUserColor = gazePoint.IsValid ? Color.green : Color.red;
                 theVig.VignetteCenter.x = gazePoint.Screen.x / cam.pixelWidth;
                 theVig.VignetteCenter.y = gazePoint.Screen.y / cam.scaledPixelHeight;
             }
@@ -160,7 +170,7 @@ public class GetGaze : MonoBehaviour
                 StartCoroutine("StartAbsentMode");
             }
         }
-        else
+        else // simulate with mouse if no Tobii connected
         {
             theVig.VignetteCenter.x = Input.mousePosition.x / cam.pixelWidth;
             theVig.VignetteCenter.y = Input.mousePosition.y / cam.pixelHeight;
@@ -175,10 +185,9 @@ public class GetGaze : MonoBehaviour
             UserPresence userPresence = TobiiAPI.GetUserPresence();
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
             noUserCanvas.SetActive(true);
-            //noUserImage.Color = userPresence.IsUserPresent() ? Color.green : Color.red;
+            
             if (userPresence.IsUserPresent()){
                 GazePoint gazePoint = TobiiAPI.GetGazePoint();
-            //    noEyesImage.Color = gazePoint.IsRecent() ? Color.green : Color.red;
             }
         }
 

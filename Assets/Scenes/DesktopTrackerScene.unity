@@ -7129,6 +7129,8 @@ MonoBehaviour:
   simAbs: 0
   noUserImage: {fileID: 896138166}
   noEyesImage: {fileID: 1208213941}
+  noUserColor: {r: 0, g: 0, b: 0, a: 0}
+  noEyesColor: {r: 0, g: 0, b: 0, a: 0}
   aT: {fileID: 357337299}
   cT: {fileID: 204904719}
   gT: {fileID: 1630822427}
