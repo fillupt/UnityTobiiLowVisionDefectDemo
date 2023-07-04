@@ -1,10 +1,9 @@
 ﻿
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEditor;
-using UnityEngine.Events;
 using TMPro;
 using UnityEngine.Video;
+using UnityEngine.SceneManagement;
 
 public class ChangePicture : MonoBehaviour
 {
@@ -31,7 +30,7 @@ public class ChangePicture : MonoBehaviour
     public Button startBut;
     public GetGaze gg;
     public GameObject introCanvas;
-    public SpriteRenderer VPlogo, VPLogoSmall;
+    public SpriteRenderer VPlogo, VPLogoSmall, SOVSlogo;
     public ParticleSystem floaters;
 
     private void Start()
@@ -61,6 +60,15 @@ public class ChangePicture : MonoBehaviour
                 }
             }
         }
+
+        // reload the scene if pressing escape if SOVSlogo is not enabled, or quit application if it is
+        if (Input.GetKeyUp(KeyCode.Escape))
+        {
+            if (SOVSlogo.enabled)
+                Application.Quit();
+            else
+                SceneManager.LoadScene(0);
+        }
     }
 
     void Begin()
@@ -71,6 +79,7 @@ public class ChangePicture : MonoBehaviour
         introCanvas.SetActive(false);
         gg.enabled = true;
         VPlogo.enabled = false;
+        SOVSlogo.enabled = false;
         VPLogoSmall.enabled = true;
         hasStarted = true;
     }

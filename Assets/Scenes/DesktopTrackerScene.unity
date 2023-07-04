@@ -6458,7 +6458,7 @@ GameObject:
   - component: {fileID: 1144896022}
   - component: {fileID: 1144896023}
   m_Layer: 0
-  m_Name: VirtualEyes Logo
+  m_Name: VirtualEyes Logo small
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6472,8 +6472,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144896020}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 885.6, y: -487.9, z: -0.5}
-  m_LocalScale: {x: 15, y: 15, z: 15}
+  m_LocalPosition: {x: 921.1, y: -511.6, z: -0.5}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 1902497932}
   m_RootOrder: 0
@@ -6614,6 +6614,87 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1208213939}
   m_CullTransparentMesh: 0
+--- !u!1 &1226486821
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1226486822}
+  - component: {fileID: 1226486823}
+  m_Layer: 0
+  m_Name: sovslogo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1226486822
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226486821}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -738.3, y: -465, z: -5}
+  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_Children: []
+  m_Father: {fileID: 1902497932}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &1226486823
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226486821}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: 1914f1a86b512eb4d8c1428e364e5962, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 17.25, y: 4.24}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1340303527
 GameObject:
   m_ObjectHideFlags: 0
@@ -7013,7 +7094,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 2d27db8af1b2ff6419b1e096c196e5d2, type: 3}
   - {fileID: 21300000, guid: 0ba62a9916ab9c044ba6b6d016deba3b, type: 3}
   - {fileID: 21300000, guid: 7788c7b2b072d1548911f3913e8a81d1, type: 3}
-  - {fileID: 21300000, guid: 2f116a982c09f674d8ba722965432e5e, type: 3}
+  - {fileID: 21300000, guid: bb232a04e8f6e0f418611757c3da8e78, type: 3}
   - {fileID: 21300000, guid: 28970975e8c4ccc4aa332957bee2c8d2, type: 3}
   - {fileID: 21300000, guid: 27f4310b75343454382abb577f5cb2a7, type: 3}
   - {fileID: 21300000, guid: 60e830122a1da8148a1759fa6329797d, type: 3}
@@ -7027,6 +7108,7 @@ MonoBehaviour:
   introCanvas: {fileID: 1976055468}
   VPlogo: {fileID: 1787134859}
   VPLogoSmall: {fileID: 1144896022}
+  SOVSlogo: {fileID: 1226486823}
   floaters: {fileID: 461024915}
 --- !u!114 &1626885290
 MonoBehaviour:
@@ -7221,7 +7303,7 @@ GameObject:
   - component: {fileID: 1787134858}
   - component: {fileID: 1787134859}
   m_Layer: 0
-  m_Name: velablogo
+  m_Name: velablogo large
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7236,7 +7318,7 @@ Transform:
   m_GameObject: {fileID: 1787134857}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 797, y: -465, z: -4}
-  m_LocalScale: {x: 22, y: 22, z: 22}
+  m_LocalScale: {x: 20, y: 20, z: 20}
   m_Children: []
   m_Father: {fileID: 1902497932}
   m_RootOrder: 1
@@ -7455,6 +7537,7 @@ RectTransform:
   m_Children:
   - {fileID: 1144896021}
   - {fileID: 1787134858}
+  - {fileID: 1226486822}
   m_Father: {fileID: 922250487}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

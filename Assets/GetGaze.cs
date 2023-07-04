@@ -37,9 +37,6 @@ public class GetGaze : MonoBehaviour
         scotOuter = theVig.VignetteOuterValueDistance;
 
         simAbs = noUser;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-            Application.Quit();
         
         if (Input.GetKeyUp(KeyCode.R)) //Reset
         {
@@ -184,5 +181,6 @@ public class GetGaze : MonoBehaviour
             //    noEyesImage.Color = gazePoint.IsRecent() ? Color.green : Color.red;
             }
         }
+
     }
 }
