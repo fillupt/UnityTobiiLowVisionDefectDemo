@@ -7135,6 +7135,7 @@ MonoBehaviour:
   cT: {fileID: 204904719}
   gT: {fileID: 1630822427}
   sT: {fileID: 551092147}
+  imageDistortion: {fileID: 1902497936}
 --- !u!1 &1630822425
 GameObject:
   m_ObjectHideFlags: 0
@@ -7632,8 +7633,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28f78ad67ec6fef42be39e9957cb90c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  distortionSize: 0.1
-  distortionAmount: 0
+  distortionSize: 0.5
+  distortionAmount: 0.2
+  distortRadius: 0.2
 --- !u!1 &1954469395
 GameObject:
   m_ObjectHideFlags: 0
