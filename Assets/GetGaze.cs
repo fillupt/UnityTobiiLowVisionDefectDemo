@@ -126,11 +126,6 @@ public class GetGaze : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.M))
-        {  
-            SceneManager.LoadScene(0);
-        }
-
         if (Input.GetKey(KeyCode.UpArrow))
         {
             if (currSim == 0  && scotOuter < maxScot)
@@ -166,8 +161,10 @@ public class GetGaze : MonoBehaviour
             }
             else
             {
+                if (!noUser)
+                    StartCoroutine("StartAbsentMode"); // just run once per loss
                 noUser = true;
-                StartCoroutine("StartAbsentMode");
+
             }
         }
         else // simulate with mouse if no Tobii connected
@@ -179,17 +176,9 @@ public class GetGaze : MonoBehaviour
 
     private IEnumerator StartAbsentMode()
     {
-        yield return new WaitForSeconds(1.5f);
-        if (noUser)
-        {
-            UserPresence userPresence = TobiiAPI.GetUserPresence();
-            cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
-            noUserCanvas.SetActive(true);
-            
-            if (userPresence.IsUserPresent()){
-                GazePoint gazePoint = TobiiAPI.GetGazePoint();
-            }
-        }
-
+        cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
+        yield return new WaitForSeconds(1f);
+        noUserCanvas.SetActive(true);
     }
+
 }
