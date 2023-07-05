@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using Tobii.Gaming;
+﻿using Tobii.Gaming;
 using UnityEngine;
 using Wilberforce.FinalVignette;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class GetGaze : MonoBehaviour
 {
@@ -15,18 +13,20 @@ public class GetGaze : MonoBehaviour
     private bool noUser;
     private float maxScot = 1.99f;
     private float minScot = .01f;
-    private float scotOuter;
+    private float scotOuter, randomWetness;
     private float inactiveTimeOut = 1.5f;
     private float lastSeenTime;
     public float rateOfChange;
-    public bool simAbs;
     public Image noUserImage, noEyesImage;
     public Color noUserColor, noEyesColor;
     private int currSim;
     private float maxCatAlpha = 0.99f;
     private float minCatAlpha = 0.1f;
-    public Toggle aT, cT, gT ,sT;
-    public ImageDistortion imageDistortion;
+    public Toggle aT, cT, gT ,oT;
+    public float distortionSize;
+    public float distortionAmount;
+    public float distortRadius;
+    public Image image;
 
     private void Start()
     {
@@ -35,13 +35,12 @@ public class GetGaze : MonoBehaviour
         scotOuter = theVig.VignetteOuterValueDistance;
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
-        imageDistortion.enabled = false;
     }
 
     void Update()
     {
+        
         scotOuter = theVig.VignetteOuterValueDistance;
-        simAbs = noUser;
         // Set noUserImage and noEyesImage to red as default
         noUserColor = Color.red;
         noEyesColor = Color.red;
@@ -49,14 +48,13 @@ public class GetGaze : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.R)) //Reset
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
-                    imageDistortion.enabled = false;
             theVig.VignetteInnerColor.a = 0f;
             theVig.VignetteOuterColor.a = 0.0f;
+            currSim = -1;
         }
 
         if (Input.GetKeyUp(KeyCode.G) && gT.isOn) //glaucoma
         {
-            imageDistortion.enabled = false;
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 0;
             theVig.VignetteInnerColor   = Color.black;
@@ -72,7 +70,6 @@ public class GetGaze : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
         {
-            imageDistortion.enabled = false;
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 2;
             theVig.VignetteInnerColor   = new Color(.18f, .18f, .08f, 1f);
@@ -87,35 +84,34 @@ public class GetGaze : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
         {
-            imageDistortion.enabled = true;
-            imageDistortion.distortionAmount = 0.2f;
-            imageDistortion.distortionSize = 0.5f;
-            imageDistortion.distortRadius = 0.2f;
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
             currSim = 1;
             theVig.VignetteInnerColor   = Color.black;
             theVig.VignetteOuterColor   = Color.black;
             theVig.VignetteInnerColor.a = 1f; 
-            theVig.VignetteOuterColor.a = 0.05f;
+            theVig.VignetteOuterColor.a = 0.02f;
             theVig.VignetteFalloff      = 2f;
             maxScot = 2f;
             minScot = .2f;
             theVig.VignetteOuterValueDistance = 0.2f;
             theVig.VignetteInnerValueDistance = 0.01f;
+            randomWetness = Random.Range(0.1f, 0.4f);
         }
 
-        if (Input.GetKeyUp(KeyCode.S) && sT.isOn) //scotoma
+        if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
         {
             cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
-            currSim = 0;
-            theVig.VignetteInnerColor   = Color.red;
-            theVig.VignetteOuterColor   = Color.red;
-            theVig.VignetteInnerColor.a = 0f; 
-            theVig.VignetteOuterColor.a = 1f; 
+            currSim = 4;
+            theVig.VignetteInnerColor   = Color.gray;
+            theVig.VignetteOuterColor   = Color.gray;
+            theVig.VignetteInnerColor.a = .3f; 
+            theVig.VignetteOuterColor.a = 0.01f;
             theVig.VignetteFalloff      = 1f;
-            maxScot = 1.5f;
-            minScot = .05f;
-            theVig.VignetteOuterValueDistance = 1.5f;
+            maxScot = 2f;
+            minScot = .2f;
+            theVig.VignetteOuterValueDistance = 0.2f;
+            theVig.VignetteInnerValueDistance = 0.01f;
+            randomWetness = Random.Range(0.1f, 0.4f);
         }
 
         if (Input.GetKey(KeyCode.DownArrow))
@@ -124,15 +120,10 @@ public class GetGaze : MonoBehaviour
             {              
                 theVig.VignetteOuterValueDistance -= (rateOfChange * Time.deltaTime);
             }
-            if (currSim == 1 && scotOuter < maxScot) 
+            if ((currSim == 1 | currSim == 4) && scotOuter < maxScot) 
             {
-                 theVig.VignetteOuterValueDistance += (rateOfChange * Time.deltaTime);
-                 theVig.VignetteInnerValueDistance += (0.2f*rateOfChange * Time.deltaTime);
-                 
-                imageDistortion.distortionAmount = 0.2f + theVig.VignetteInnerValueDistance;
-                imageDistortion.distortionSize = 0.5f;
-                imageDistortion.distortRadius = 0.2f + theVig.VignetteOuterValueDistance*.2f;
-
+                theVig.VignetteOuterValueDistance += (rateOfChange * Time.deltaTime);
+                theVig.VignetteInnerValueDistance += (0.2f*rateOfChange * Time.deltaTime);
             }
             if (currSim == 2 && theVig.VignetteInnerColor.a < maxCatAlpha)
             {
@@ -148,13 +139,10 @@ public class GetGaze : MonoBehaviour
                 theVig.VignetteOuterValueDistance += (rateOfChange * Time.deltaTime);
             }
 
-            if (currSim == 1 && scotOuter > minScot)
+            if ((currSim == 1 | currSim == 4) && scotOuter > minScot)
             {
                 theVig.VignetteOuterValueDistance -= (rateOfChange * Time.deltaTime);
                 theVig.VignetteInnerValueDistance -= (0.2f*rateOfChange * Time.deltaTime);
-                imageDistortion.distortionAmount = 0.2f + theVig.VignetteInnerValueDistance;
-                imageDistortion.distortionSize = 0.5f;
-                imageDistortion.distortRadius = 0.2f + theVig.VignetteOuterValueDistance*.2f;
             }
 
             if (currSim == 2 && theVig.VignetteInnerColor.a > minCatAlpha)
@@ -163,6 +151,7 @@ public class GetGaze : MonoBehaviour
                 theVig.VignetteOuterColor.a -= (rateOfChange * Time.deltaTime);
             }
         }
+        
         if (TobiiAPI.IsConnected)
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
@@ -179,17 +168,55 @@ public class GetGaze : MonoBehaviour
             }
             else
             {
-                cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
+                // do a graduated release to no user mode
+                if ((Time.time - lastSeenTime) > inactiveTimeOut/2f)
+                    cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
+
                 if ((Time.time - lastSeenTime) > inactiveTimeOut)
                     noUserCanvas.SetActive(true);
             }
         }
         else // simulate with mouse if no Tobii connected
-        {
-            if (currSim < 3){
-                theVig.VignetteCenter.x = Input.mousePosition.x / cam.pixelWidth;
-                theVig.VignetteCenter.y = Input.mousePosition.y / cam.pixelHeight;
-            }
+        {      
+            theVig.VignetteCenter.x = Input.mousePosition.x / cam.pixelWidth;
+            theVig.VignetteCenter.y = Input.mousePosition.y / cam.scaledPixelHeight;
         }
+
+        // now distortion layer
+        distortRadius = theVig.VignetteInnerValueDistance * 8f;
+
+        if (currSim == 4)
+            distortionSize = 0.09f;
+        else
+            distortionSize = 0.5f;
+
+        // Calculate the region to distort based on the normalized position and distortion size
+        Rect distortionRect = new Rect(theVig.VignetteCenter.x - distortionSize * 0.5f,
+                                        theVig.VignetteCenter.y - distortionSize * 0.5f,
+                                        distortionSize,
+                                        distortionSize);
+        distortionAmount = randomWetness + theVig.VignetteInnerValueDistance;
+        // Apply distortion effect to the region
+        if (currSim == 1 | currSim == 4) // AMD or Oedema
+            ApplyDistortion(distortionRect, theVig.VignetteCenter, distortionAmount, distortRadius);
+        else
+            ApplyDistortion(distortionRect, theVig.VignetteCenter, 0f, distortRadius);
+    }
+
+    private void ApplyDistortion(Rect region, Vector2 distortionCenter, float amount, float radius)
+    {
+        // Get the material assigned to the image component
+        Material material = image.material;
+
+        // Convert the distortion center from screen space to texture space
+        Vector2 distortionCenterTextureSpace = new Vector2(distortionCenter.x * region.width + region.x,
+                                                        distortionCenter.y * region.height + region.y);
+
+        // Set the distortion center and parameters in the material properties
+        material.SetVector("_DistortionCenter", distortionCenterTextureSpace);
+        material.SetFloat("_DistortionSize", Mathf.Min(region.width, region.height));
+        material.SetFloat("_DistortionAmount", amount);
+        material.SetFloat("_DistortionRadius", radius);
+        image.material = material;
     }
 }
