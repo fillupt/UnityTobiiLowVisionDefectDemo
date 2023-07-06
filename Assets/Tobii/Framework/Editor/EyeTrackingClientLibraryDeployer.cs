@@ -86,14 +86,7 @@ public class EyeTrackingClientLibraryDeployer
 
     private static bool IsActivePlatformLinuxOrOsx()
     {
-        return IsActivePlatformLinux() || IsActivePlatformOsx();
-    }
-
-    private static bool IsActivePlatformLinux()
-    {
-        return EditorUserBuildSettings.activeBuildTarget == BuildTarget.StandaloneLinux ||
-               EditorUserBuildSettings.activeBuildTarget == BuildTarget.StandaloneLinux64 ||
-               EditorUserBuildSettings.activeBuildTarget == BuildTarget.StandaloneLinuxUniversal;
+        return IsActivePlatformOsx();
     }
 
     private static bool IsActivePlatformOsx()
