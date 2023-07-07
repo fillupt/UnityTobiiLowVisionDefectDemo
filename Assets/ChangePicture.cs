@@ -26,13 +26,12 @@ public class ChangePicture : MonoBehaviour
          KeyCode.Equals
      };
 
-    private bool hasStarted;
+    public bool hasStarted;
     public Button startBut;
     public GetGaze gg;
     public GameObject introCanvas;
     public SpriteRenderer VPlogo, VPLogoSmall, SOVSlogo;
     public ParticleSystem floaters;
-
     private void Start()
     {
         statusText.text = "LV Simulator V" + Application.version;
@@ -66,8 +65,10 @@ public class ChangePicture : MonoBehaviour
         {
             if (SOVSlogo.enabled)
                 Application.Quit();
-            else
+            else{
+                gg.ResetShader();
                 SceneManager.LoadScene(0);
+            }
         }
     }
 

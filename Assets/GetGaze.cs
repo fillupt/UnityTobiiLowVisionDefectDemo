@@ -6,219 +6,237 @@ public class GetGaze : MonoBehaviour
 {
 
     public GameObject noUserCanvas;
+    public StartMouseMode smm;
     public Color catColour;
     public Toggle aT, cT, gT ,oT;
     public Image image;
     public float rateOfChange;
-    public Color vigColor;
+    private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
     float lastSeenTime, distortionSize, distortionAmount, distortRadius, randomWetness;
     int currSim;
     float vigAlpha, vigSize;
-    bool vigInvert;
+    bool vigInvert, enableShader;
     private Camera cam;
-    
+    public ChangePicture cp;
+    public Vector2 shaderCentre;
     private void Start()
     {
-        cam       = Camera.main;
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
+        cam          = Camera.main;
         ResetShader();
     }
 
-    private void ResetShader(){
+    public void ResetShader(){
+        shaderCentre = new Vector2(0.5f, 0.5f);
         currSim = -1;
-        distortionSize = 1.0f;
-        distortRadius = 0f;
-        vigInvert = true;
-        vigAlpha = 1f;
+        enableShader = false;
     }
 
     void Update()
     {
         
-        
-        if (Input.GetKeyUp(KeyCode.R)) //Reset
-        {
-            ResetShader();
-        }
-
-        if (Input.GetKeyUp(KeyCode.G) && gT.isOn) //glaucoma
-        {
-            currSim = 0;
-            distortionSize = 1.0f;
-            distortRadius = 0f;
-            vigColor   = Color.black;
-            vigInvert = false;
-            vigAlpha = 0.5f; 
-            vigSize = 1.0f;
-        }
-
-        if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
-        {
-            currSim = 2;
-            vigColor = catColour;
-        }
-
-        if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
-        {
-            currSim = 1;
-            distortionSize = 0.116f;
-            vigColor   = Color.black;
-            vigInvert = true;
-            vigAlpha = 0f; 
-            vigSize = 0.05f;
-            randomWetness = Random.Range(0.4f, 0.6f);
-            distortRadius = vigSize;
-            distortionAmount = randomWetness;
-
-        }
-
-        if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
-        {
-            currSim = 4;
-            distortionSize = 0.116f;
-            distortRadius = 0.08f;
-            vigColor   = Color.gray;
-            vigInvert = true;
-            vigAlpha = 0f; 
-            vigSize = 0.001f;
-            randomWetness = Random.Range(0.6f, 0.9f);
-        }
-
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            float change = rateOfChange * Time.deltaTime * -1f;
-            if (currSim ==0) // glaucoma
-            {              
-                vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
-                vigAlpha = vigSize/2f;
-            }
-            if (currSim == 1) // AMD 
+        if (cp.hasStarted){
+            if (Input.GetKeyUp(KeyCode.R)) //Reset
             {
-                vigSize = Mathf.Clamp(vigSize - change, 0.1f, .7f);
-                vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
-                distortRadius = vigSize;
-                //distortionAmount = distortRadius * randomWetness;
+                ResetShader();
             }
-            if (currSim == 2 ) //cataract
+
+            if (Input.GetKeyUp(KeyCode.G) && gT.isOn) //glaucoma
             {
-                //theVig.VignetteInnerColor.a += (rateOfChange * Time.deltaTime);
-                //theVig.VignetteOuterColor.a += (rateOfChange * Time.deltaTime);
+                enableShader = true;
+                currSim = 0;
+                distortionSize = 1.0f;
+                distortRadius = 0f;
+                vigColor   = new Color(0.2f, 0.2f, 0.2f, 1f);
+                vigInvert = false;
+                vigAlpha = 0f; 
+                vigSize = 1.0f;
             }
-            if ( currSim == 4)  // Oedema
+
+            if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
             {
-                distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
+                enableShader = true;
+                currSim = 2;
+                vigColor = catColour;
+                distortionSize = 0.116f;
+                distortRadius = 0.08f;
                 distortionAmount = distortRadius;
-                vigSize = Mathf.Clamp(distortRadius-0.5f, .001f, 1.0f);
-
-            }
-        }
-
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            float change = rateOfChange * Time.deltaTime;
-            if (currSim == 0 )
-            {
-                vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
-                vigAlpha = vigSize/2f;
+                vigInvert = true;
+                vigAlpha = 0f; 
+                vigSize = 0.7f;
             }
 
-            if (currSim == 1 )
+            if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
             {
-                vigSize = Mathf.Clamp(vigSize - change, 0.1f, .7f);
-                vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
+                enableShader = true;
+                currSim = 1;
+                distortionSize = 0.116f;
+                vigColor   = Color.gray;
+                vigInvert = true;
+                vigAlpha = 0f; 
+                vigSize = 0.05f;
+                randomWetness = Random.Range(0.4f, 0.6f);
                 distortRadius = vigSize;
-                //distortionAmount = distortRadius * randomWetness;
+                distortionAmount = randomWetness;
+
             }
 
-            if (currSim == 2)
+            if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
             {
-                //theVig.VignetteInnerColor.a -= (rateOfChange * Time.deltaTime);
-                //theVig.VignetteOuterColor.a -= (rateOfChange * Time.deltaTime);
-            }
-            if ( currSim == 4)  // Oedema
-            {
-                distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
+                enableShader = true;
+                currSim = 4;
+                distortionSize = 0.116f;
+                distortRadius = 0.08f;
                 distortionAmount = distortRadius;
-                vigSize = Mathf.Clamp(distortRadius-0.5f, .001f, 1.0f);
+                vigColor   = Color.gray;
+                vigInvert = true;
+                vigAlpha = 0f; 
+                vigSize = 0.001f;
+                randomWetness = Random.Range(0.6f, 0.9f);
+            }
+
+            if (Input.GetKey(KeyCode.DownArrow)) // get better
+            {
+                float change = rateOfChange * Time.deltaTime * -1f;
+                if (currSim ==0) // glaucoma
+                {              
+                    vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
+                    //vigAlpha = Mathf.Clamp(vigSize/1.2f, 0, 0.5f);
+                }
+                if (currSim == 1) // AMD 
+                {
+                    vigSize = Mathf.Clamp(vigSize - change, 0.1f, .7f);
+                    vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
+                    distortRadius = vigSize;
+                    //distortionAmount = distortRadius * randomWetness;
+                }
+                if (currSim == 2 ) //cataract
+                {
+                    vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
+                    vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
+                }
+                if ( currSim == 4)  // Oedema
+                {
+                    distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
+                    distortionAmount = distortRadius;
+                    vigSize = Mathf.Clamp(Mathf.Pow(distortRadius,4f), .001f, 0.3f);
+                }
+            }
+
+            if (Input.GetKey(KeyCode.UpArrow)) // get worse
+            {
+                float change = rateOfChange * Time.deltaTime;
+                if (currSim == 0 )
+                {
+                    vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
+                }
+
+                if (currSim == 1 )
+                {
+                    vigSize = Mathf.Clamp(vigSize - change, 0.05f, .7f);
+                    vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
+                    distortRadius = vigSize;
+                }
+
+                if (currSim == 2)
+                {
+                    vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
+                    vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
+                }
+                if ( currSim == 4)  // Oedema
+                {
+                    distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
+                    distortionAmount = distortRadius;
+                    vigSize = Mathf.Clamp(distortRadius-0.5f, .001f, 1.0f);
+                }
             }
         }
         
+        bool hasTimedOut = false;
+
         if (TobiiAPI.IsConnected)
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
             if (userPresence.IsUserPresent()) 
             {
+                enableShader = true;
                 lastSeenTime = Time.time;
-                noUserCanvas.SetActive(false);
-                //cam.GetComponent<FinalVignetteCommandBuffer>().enabled = true;
                 GazePoint gazePoint = TobiiAPI.GetGazePoint();
-                //theVig.VignetteCenter.x = gazePoint.Screen.x / cam.pixelWidth;
-                //theVig.VignetteCenter.y = gazePoint.Screen.y / cam.scaledPixelHeight;
+                shaderCentre.x = gazePoint.Screen.x / cam.pixelWidth;
+                shaderCentre.y = gazePoint.Screen.y / cam.scaledPixelHeight;
             }
             else
             {
                 // do a graduated release to no user mode
                 if ((Time.time - lastSeenTime) > inactiveTimeOut/2f)
-                    //cam.GetComponent<FinalVignetteCommandBuffer>().enabled = false;
+                    enableShader = false;
 
                 if ((Time.time - lastSeenTime) > inactiveTimeOut)
-                    noUserCanvas.SetActive(true);
+                    hasTimedOut = true;
             }
         }
-        else // simulate with mouse if no Tobii connected
-        {      
-            //theVig.VignetteCenter.x = Input.mousePosition.x / cam.pixelWidth;
-            //theVig.VignetteCenter.y = Input.mousePosition.y / cam.scaledPixelHeight;
+        else if (smm.mouseModeOn){
+                enableShader = true;
+                lastSeenTime = Time.time;
+                shaderCentre.x = Mathf.Clamp01(Input.mousePosition.x / cam.pixelWidth);
+                shaderCentre.y = Mathf.Clamp01(Input.mousePosition.y / cam.pixelHeight);
         }
+        else // simulate with mouse if no Tobii connected
+        {
+            // simulate user not present by holding right mouse button
+            if (!Input.GetMouseButton(1))
+            {
+                //enableShader = true;
+                lastSeenTime = Time.time;
+                shaderCentre.x = Mathf.Clamp01(Input.mousePosition.x / cam.pixelWidth);
+                shaderCentre.y = Mathf.Clamp01(Input.mousePosition.y / cam.pixelHeight);
+            }
+            else
+            {
+                // do a graduated release to no user mode
+                if ((Time.time - lastSeenTime) > inactiveTimeOut/2f)
+                    enableShader = false;
 
+                if ((Time.time - lastSeenTime) > inactiveTimeOut)
+                    hasTimedOut = true;
+            }      
+
+        }
+        bool ShowNoUser = hasTimedOut || smm.mouseModeOn;
+        noUserCanvas.SetActive(ShowNoUser);
         // Calculate the region to distort based on the normalized position and distortion size
-        Rect distortionRect = new Rect(Input.mousePosition.x / cam.pixelWidth - distortionSize * 0.5f,
-                                       Input.mousePosition.y / cam.scaledPixelHeight - distortionSize * 0.5f,
+        Rect distortionRect = new Rect(shaderCentre.x - distortionSize * 0.5f,
+                                       shaderCentre.y - distortionSize * 0.5f,
                                         distortionSize,
                                         distortionSize);
-        // Apply distortion effect to the region
-        // get mouse position as normalised screen space
-        Vector2 mousePos = Input.mousePosition;
-        mousePos.x = mousePos.x / cam.pixelWidth;
-        mousePos.y = mousePos.y / cam.scaledPixelHeight;
         
-        ApplyDistortion(distortionRect, mousePos, distortionAmount, distortRadius, Color.gray, vigAlpha, vigSize, vigInvert);
+        if (cp.hasStarted)
+            ApplyDistortion(distortionRect, shaderCentre, distortionAmount, distortRadius, vigColor, vigAlpha, vigSize, vigInvert, enableShader);
     }
 
- private void ApplyDistortion(Rect region, Vector2 distortionCenter, float amount, float radius, Color vignetteColor, float vignetteAlpha, float vignetteSize, bool reverseVignette)
-{
-    // Get the material assigned to the image component
-    Material material = image.material;
+    private void ApplyDistortion(Rect region, Vector2 distortionCenter, float amount, float radius, Color vignetteColor, float vignetteAlpha, float vignetteSize, bool reverseVignette, bool enableShader)
+    {
+        // Get the material assigned to the image component
+        Material material = image.material;
 
-    // Convert the distortion center from screen space to texture space
-    Vector2 distortionCenterTextureSpace = new Vector2(distortionCenter.x * region.width + region.x,
-                                                       distortionCenter.y * region.height + region.y);
+        // Convert the distortion center from screen space to texture space
+        Vector2 distortionCenterTextureSpace = new Vector2(distortionCenter.x * region.width + region.x,
+                                                        distortionCenter.y * region.height + region.y);
 
-    // Set the distortion center and parameters in the material properties
-    material.SetVector("_DistortionCenter", distortionCenterTextureSpace);
-    material.SetFloat("_DistortionSize", Mathf.Min(region.width, region.height));
-    material.SetFloat("_DistortionAmount", amount);
-    material.SetFloat("_DistortionRadius", radius);
+        // Set the distortion center and parameters in the material properties
+        material.SetVector("_DistortionCenter", distortionCenterTextureSpace);
+        material.SetFloat("_DistortionSize", Mathf.Min(region.width, region.height));
+        material.SetFloat("_DistortionAmount", amount);
+        material.SetFloat("_DistortionRadius", radius);
 
-    // Set the vignette parameters in the material properties
-    material.SetColor("_VignetteColor", vignetteColor);
-    material.SetFloat("_VignetteAlpha", vignetteAlpha);
-    material.SetFloat("_VignetteSize", vignetteSize);
-    material.SetFloat("_ReverseVignette", reverseVignette ? 1f : 0f);
-
-    image.material = material;
+        // Set the vignette parameters in the material properties
+        material.SetColor("_VignetteColor", vignetteColor);
+        material.SetFloat("_VignetteAlpha", vignetteAlpha);
+        material.SetFloat("_VignetteSize", vignetteSize);
+        material.SetFloat("_ReverseVignette", reverseVignette ? 1f : 0f);
+        material.SetFloat("_EnableShader", enableShader ? 1f : 0f);
+        image.material = material;
+    }
 }
-
-}
-        // properties
-/*      float2 _DistortionCenter;
-        float _DistortionSize;
-        float _DistortionAmount;
-        float _DistortionRadius;
-        float _BlurStrength;
-        fixed4 _VignetteColor;
-        float _VignetteAlpha;
-        float _VignetteSize;
-        float _ReverseVignette; */

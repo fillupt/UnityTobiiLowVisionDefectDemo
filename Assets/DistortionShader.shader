@@ -10,6 +10,7 @@
         _VignetteAlpha ("Vignette Alpha", Range(0, 1)) = 0.5
         _VignetteSize ("Vignette Size", Range(0, 1)) = 0.5
         _ReverseVignette ("Reverse Vignette", Range(0, 1)) = 0
+        _EnableShader ("Enable Shader", Float) = 1
     }
 
     SubShader {
@@ -29,12 +30,20 @@
         float _VignetteAlpha;
         float _VignetteSize;
         float _ReverseVignette;
+        float _EnableShader;
 
         struct Input {
             float2 uv_MainTex;
         };
 
         void surf(Input IN, inout SurfaceOutput o) {
+            if (_EnableShader == 0) {
+                // Disable the shader effect, output the original color
+                fixed4 col = tex2D(_MainTex, IN.uv_MainTex);
+                o.Albedo = col.rgb;
+                o.Alpha = col.a;
+                return;
+            }
             // Calculate the distance from the distortion center
             float2 center = IN.uv_MainTex - _DistortionCenter;
             float distance = length(center) / _DistortionRadius;
@@ -69,6 +78,7 @@
 
             float aspectRatio = _ScreenParams.y / _ScreenParams.x;
             float2 normalizedUV = (IN.uv_MainTex - _DistortionCenter) / vignetteSize * float2(1.0, aspectRatio);
+            
             float normalizedDistance = length(normalizedUV);
 
             vignette = smoothstep(vignetteStrength, 1.0, normalizedDistance);
@@ -77,10 +87,16 @@
                 vignette = 1.0 - vignette;
             }
 
-            fixed4 vignetteColor = _VignetteColor * vignette;
+            fixed4 vignetteColor = _VignetteColor;
+            vignetteColor.a *= vignette;
+            //vignetteColor.a *= _VignetteAlpha;
+            //vignetteColor.a *= vignette * _VignetteAlpha;
 
             // Combine the color with the vignette
             col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette;
+            //col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette * (1 - _VignetteAlpha);
+            //col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette * (1 - vignetteColor.a);
+            //col.rgb = col.rgb * (1 - vignette * (1 - vignetteColor.a)) + vignetteColor.rgb * vignette * (1 - vignetteColor.a);
 
             o.Albedo = col.rgb;
             o.Alpha = col.a;
