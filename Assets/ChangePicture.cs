@@ -11,6 +11,7 @@ public class ChangePicture : MonoBehaviour
     public Image defaultImage;
     public TMP_Text statusText;
     public VideoPlayer vp;
+    private int currentImageIndex = 0;
     private KeyCode[] keyCodes = {
          KeyCode.Alpha1,
          KeyCode.Alpha2,
@@ -29,14 +30,11 @@ public class ChangePicture : MonoBehaviour
     public bool hasStarted;
     public Button startBut;
     public GetGaze gg;
-    public GameObject introCanvas;
-    public SpriteRenderer VPlogo, VPLogoSmall, SOVSlogo;
-    public ParticleSystem floaters;
+    public GameObject introCanvas, runtimeCanvas;
     private void Start()
     {
         statusText.text = "LV Simulator V" + Application.version;
         startBut.onClick.AddListener(Begin);
-        VPLogoSmall.enabled = false;
     }
 
     void Update()
@@ -48,8 +46,8 @@ public class ChangePicture : MonoBehaviour
                 {
                     vp.Stop();
                     defaultImage.enabled = true;
-                    int numberPressed = i; //actual key is +1 and 0 ==10;
-                    defaultImage.sprite = theIms[numberPressed];
+                    currentImageIndex = i; //actual key is +1 and 0 ==10;
+                    defaultImage.sprite = theIms[currentImageIndex];
                 }
                 // use tilde key to play the video
                 if (Input.GetKeyUp(KeyCode.BackQuote))
@@ -58,30 +56,45 @@ public class ChangePicture : MonoBehaviour
                     vp.Play();
                 }
             }
+
+            // Navigate images with left/right arrow keys
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                vp.Stop();
+                defaultImage.enabled = true;
+                currentImageIndex = (currentImageIndex + 1) % theIms.Length;
+                defaultImage.sprite = theIms[currentImageIndex];
+            }
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                vp.Stop();
+                defaultImage.enabled = true;
+                currentImageIndex = (currentImageIndex - 1 + theIms.Length) % theIms.Length;
+                defaultImage.sprite = theIms[currentImageIndex];
+            }
         }
 
-        // reload the scene if pressing escape if SOVSlogo is not enabled, or quit application if it is
+        // Use Escape key to quit or go back to intro
         if (Input.GetKeyUp(KeyCode.Escape))
         {
-            if (SOVSlogo.enabled)
+            if (introCanvas.activeSelf)
                 Application.Quit();
             else{
                 gg.ResetShader();
-                SceneManager.LoadScene(0);
+                hasStarted = false;
+                runtimeCanvas.SetActive(false);
+                introCanvas.SetActive(true);
             }
         }
     }
 
     void Begin()
     {
-        defaultImage.sprite = theIms[UnityEngine.Random.Range(0, theIms.Length)];
-        floaters.Stop();
-        floaters.Clear();
+        currentImageIndex = UnityEngine.Random.Range(0, theIms.Length);
+        defaultImage.sprite = theIms[currentImageIndex];
         introCanvas.SetActive(false);
+        runtimeCanvas.SetActive(true);
         gg.enabled = true;
-        VPlogo.enabled = false;
-        SOVSlogo.enabled = false;
-        VPLogoSmall.enabled = true;
         hasStarted = true;
     }
 }
