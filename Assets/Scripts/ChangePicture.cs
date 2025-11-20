@@ -31,10 +31,27 @@ public class ChangePicture : MonoBehaviour
     public Button startBut;
     public GetGaze gg;
     public GameObject introCanvas, runtimeCanvas;
+    public AudioSource audioSource;
     private void Start()
     {
         statusText.text = "LV Simulator V" + Application.version;
         startBut.onClick.AddListener(Begin);
+        
+        // Configure video player audio properly
+        vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
+        vp.controlledAudioTrackCount = 1;
+        vp.EnableAudioTrack(0, true);
+        vp.SetTargetAudioSource(0, audioSource);
+        
+        // Prepare video player
+        vp.Prepare();
+        vp.prepareCompleted += OnVideoPrepared;
+    }
+
+    private void OnVideoPrepared(VideoPlayer source)
+    {
+        // Video is ready to play with audio
+        Debug.Log("Video prepared and ready");
     }
 
     void Update()
@@ -53,6 +70,8 @@ public class ChangePicture : MonoBehaviour
                 if (Input.GetKeyUp(KeyCode.BackQuote))
                 {
                     defaultImage.enabled = false;
+                    if (!vp.isPrepared)
+                        vp.Prepare();
                     vp.Play();
                 }
             }

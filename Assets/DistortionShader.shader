@@ -14,94 +14,97 @@
     }
 
     SubShader {
-        Tags { "RenderType"="Opaque" }
-        LOD 200
+        Tags { "RenderType"="Transparent" "Queue"="Overlay" }
+        LOD 100
 
-        CGPROGRAM
-        #pragma surface surf Lambert
+        Pass {
+            ZTest Always
+            ZWrite Off
+            Cull Off
 
-        sampler2D _MainTex;
-        float2 _DistortionCenter;
-        float _DistortionSize;
-        float _DistortionAmount;
-        float _DistortionRadius;
-        float _BlurStrength;
-        fixed4 _VignetteColor;
-        float _VignetteAlpha;
-        float _VignetteSize;
-        float _ReverseVignette;
-        float _EnableShader;
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
 
-        struct Input {
-            float2 uv_MainTex;
-        };
+            sampler2D _MainTex;
+            float2 _DistortionCenter;
+            float _DistortionSize;
+            float _DistortionAmount;
+            float _DistortionRadius;
+            float _BlurStrength;
+            fixed4 _VignetteColor;
+            float _VignetteAlpha;
+            float _VignetteSize;
+            float _ReverseVignette;
+            float _EnableShader;
 
-        void surf(Input IN, inout SurfaceOutput o) {
-            if (_EnableShader == 0) {
-                // Disable the shader effect, output the original color
-                fixed4 col = tex2D(_MainTex, IN.uv_MainTex);
-                o.Albedo = col.rgb;
-                o.Alpha = col.a;
-                return;
-            }
-            // Calculate the distance from the distortion center
-            float2 center = IN.uv_MainTex - _DistortionCenter;
-            float distance = length(center) / _DistortionRadius;
+            struct appdata {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
 
-            // Calculate the distortion amount based on the distance and radius
-            float distortion = 0;
-            if (distance <= 1.0) {
-                distortion = _DistortionAmount * (1 - distance / _DistortionSize);
-            }
+            struct v2f {
+                float2 uv : TEXCOORD0;
+                float4 vertex : SV_POSITION;
+            };
 
-            // Apply Gaussian blur fade
-            float blurFade = exp(-(distance * distance) / (2.0 * _BlurStrength * _BlurStrength));
-            distortion *= blurFade;
-
-            // Calculate the offset based on the distortion amount
-            float2 offset = distortion * center;
-
-            // Sample the color from the texture with the distorted UV coordinates
-            fixed4 col = tex2D(_MainTex, IN.uv_MainTex + offset);
-
-            // Apply vignette effect
-            float2 vignetteCenter = _DistortionCenter;
-            float vignetteSize = _VignetteSize;
-            float vignetteStrength = _VignetteAlpha;
-            float2 vignetteOffset = IN.uv_MainTex - vignetteCenter;
-            float vignetteDistance = length(vignetteOffset) / vignetteSize;
-            float vignette = smoothstep(vignetteStrength, 1.0, vignetteDistance);
-
-            if (_ReverseVignette > 0.5) {
-                vignette = 1.0 - vignette;
+            v2f vert (appdata v) {
+                v2f o;
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv = v.uv;
+                return o;
             }
 
-            float aspectRatio = _ScreenParams.y / _ScreenParams.x;
-            float2 normalizedUV = (IN.uv_MainTex - _DistortionCenter) / vignetteSize * float2(1.0, aspectRatio);
-            
-            float normalizedDistance = length(normalizedUV);
+            fixed4 frag (v2f i) : SV_Target {
+                if (_EnableShader == 0) {
+                    // Disable the shader effect, output the original color
+                    fixed4 col = tex2D(_MainTex, i.uv);
+                    return col;
+                }
+                // Calculate the distance from the distortion center
+                float2 center = i.uv - _DistortionCenter;
+                float distance = length(center) / _DistortionRadius;
 
-            vignette = smoothstep(vignetteStrength, 1.0, normalizedDistance);
+                // Calculate the distortion amount based on the distance and radius
+                float distortion = 0;
+                if (distance <= 1.0) {
+                    distortion = _DistortionAmount * (1 - distance / _DistortionSize);
+                }
 
-            if (_ReverseVignette > 0.5) {
-                vignette = 1.0 - vignette;
+                // Apply Gaussian blur fade
+                float blurFade = exp(-(distance * distance) / (2.0 * _BlurStrength * _BlurStrength));
+                distortion *= blurFade;
+
+                // Calculate the offset based on the distortion amount
+                float2 offset = distortion * center;
+
+                // Sample the color from the texture with the distorted UV coordinates
+                fixed4 col = tex2D(_MainTex, i.uv + offset);
+
+                // Apply vignette effect
+                float2 vignetteCenter = _DistortionCenter;
+                float vignetteSize = _VignetteSize;
+                float vignetteStrength = _VignetteAlpha;
+
+                float aspectRatio = _ScreenParams.y / _ScreenParams.x;
+                float2 normalizedUV = (i.uv - _DistortionCenter) / vignetteSize * float2(1.0, aspectRatio);
+                
+                float normalizedDistance = length(normalizedUV);
+
+                float vignette = smoothstep(vignetteStrength, 1.0, normalizedDistance);
+
+                if (_ReverseVignette > 0.5) {
+                    vignette = 1.0 - vignette;
+                }
+
+                // Combine the color with the vignette
+                col.rgb = col.rgb * (1 - vignette) + _VignetteColor.rgb * vignette;
+
+                return col;
             }
-
-            fixed4 vignetteColor = _VignetteColor;
-            vignetteColor.a *= vignette;
-            //vignetteColor.a *= _VignetteAlpha;
-            //vignetteColor.a *= vignette * _VignetteAlpha;
-
-            // Combine the color with the vignette
-            col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette;
-            //col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette * (1 - _VignetteAlpha);
-            //col.rgb = col.rgb * (1 - vignette) + vignetteColor.rgb * vignette * (1 - vignetteColor.a);
-            //col.rgb = col.rgb * (1 - vignette * (1 - vignetteColor.a)) + vignetteColor.rgb * vignette * (1 - vignetteColor.a);
-
-            o.Albedo = col.rgb;
-            o.Alpha = col.a;
+            ENDCG
         }
-        ENDCG
     }
 }
 
