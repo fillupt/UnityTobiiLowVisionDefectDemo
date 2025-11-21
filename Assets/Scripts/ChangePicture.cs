@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Video;
-using UnityEngine.SceneManagement;
 
 public class ChangePicture : MonoBehaviour
 {
@@ -43,9 +42,6 @@ public class ChangePicture : MonoBehaviour
         vp.EnableAudioTrack(0, true);
         vp.SetTargetAudioSource(0, audioSource);
         
-        // Prepare video player
-        vp.Prepare();
-        vp.prepareCompleted += OnVideoPrepared;
     }
 
     private void OnVideoPrepared(VideoPlayer source)
@@ -57,6 +53,9 @@ public class ChangePicture : MonoBehaviour
     void Update()
     {
         if (hasStarted){
+
+
+
             for (int i = 0; i < keyCodes.Length; i++)
             {
                 if (Input.GetKeyUp(keyCodes[i]) && theIms.Length > i) 
@@ -115,5 +114,9 @@ public class ChangePicture : MonoBehaviour
         runtimeCanvas.SetActive(true);
         gg.enabled = true;
         hasStarted = true;
+        
+        // Prepare video player
+        vp.Prepare();
+        vp.prepareCompleted += OnVideoPrepared;
     }
 }

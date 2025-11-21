@@ -20,9 +20,9 @@ public class GetGaze : MonoBehaviour
     
     private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
-    float lastSeenTime, distortionSize, distortionAmount, distortRadius, randomWetness;
+    float lastSeenTime, distortionSize;
     int currSim;
-    float vigAlpha, vigSize, scotomaIrregularity, cataractIrregularity, globalFilter;
+    int diseaseSeverity = 0; // 0-100 disease severity
     bool vigInvert, enableShader;
     private Camera cam;
     public ChangePicture cp;
@@ -32,7 +32,6 @@ public class GetGaze : MonoBehaviour
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
         cam          = Camera.main;
-        globalFilter = 0f; // Initialize to 0
         ResetShader();
     }
 
@@ -40,7 +39,7 @@ public class GetGaze : MonoBehaviour
         shaderCentre = new Vector2(0.5f, 0.5f);
         currSim = -1;
         enableShader = false;
-        globalFilter = 0f; // Reset global filter
+        diseaseSeverity = 0;
     }
 
     void Update()
@@ -58,7 +57,7 @@ public class GetGaze : MonoBehaviour
                 currSim = 0;
                 image.material = glaucomaMaterial;
                 vigColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-                vigSize = 1.0f;
+                diseaseSeverity = 10; // Start at 10%
             }
 
             if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
@@ -67,10 +66,7 @@ public class GetGaze : MonoBehaviour
                 currSim = 2;
                 image.material = cataractMaterial;
                 vigColor = catColour;
-                vigAlpha = 0f; 
-                vigSize = 0.7f;
-                cataractIrregularity = 0.15f; // Start with slight irregularity
-                globalFilter = 0.1f; // Start with minimal global filter
+                diseaseSeverity = 10; // Start at 10%
             }
 
             if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
@@ -79,12 +75,7 @@ public class GetGaze : MonoBehaviour
                 currSim = 1;
                 image.material = amdMaterial;
                 vigColor = Color.gray;
-                vigAlpha = 0f; 
-                vigSize = 0.05f;
-                scotomaIrregularity = 0.1f; // Start with slight irregularity
-                randomWetness = Random.Range(0.5f, 0.7f); // Increased range
-                distortRadius = vigSize;
-                distortionAmount = randomWetness;
+                diseaseSeverity = 10; // Start at 10%
             }
 
             if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
@@ -92,74 +83,7 @@ public class GetGaze : MonoBehaviour
                 enableShader = true;
                 currSim = 4;
                 image.material = oedemaMaterial;
-                distortRadius = 0.08f;
-                distortionAmount = distortRadius;
-                vigSize = 0.001f;
-                randomWetness = Random.Range(0.6f, 0.9f);
-            }
-
-            if (Input.GetKey(KeyCode.DownArrow)) // get better
-            {
-                float change = rateOfChange * Time.deltaTime * -1f;
-                if (currSim ==0) // glaucoma
-                {              
-                    vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
-                    //vigAlpha = Mathf.Clamp(vigSize/1.2f, 0, 0.5f);
-                }
-                if (currSim == 1) // AMD 
-                {
-                    vigSize = Mathf.Clamp(vigSize - change, 0.1f, .8f);
-                    vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
-                    distortRadius = vigSize;
-                    distortionAmount = Mathf.Clamp(distortionAmount - change, 0.3f, 1.0f);
-                    scotomaIrregularity = Mathf.Clamp(scotomaIrregularity - change, 0.1f, 0.8f);
-                    //distortionAmount = distortRadius * randomWetness;
-                }
-                if (currSim == 2 ) //cataract
-                {
-                    vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
-                    vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
-                    cataractIrregularity = Mathf.Clamp(cataractIrregularity - change, 0.15f, 0.7f);
-                    globalFilter = Mathf.Clamp(globalFilter - change, 0.1f, 0.85f); // applies a uniform filter across the whole screen
-                }
-                if ( currSim == 4)  // Oedema
-                {
-                    distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
-                    distortionAmount = distortRadius;
-                    vigSize = Mathf.Clamp(Mathf.Pow(distortRadius,4f), .001f, 0.3f);
-                }
-            }
-
-            if (Input.GetKey(KeyCode.UpArrow)) // get worse
-            {
-                float change = rateOfChange * Time.deltaTime;
-                if (currSim == 0 )
-                {
-                    vigSize = Mathf.Clamp(vigSize + change, 0.1f, 1.0f);
-                }
-
-                if (currSim == 1 )
-                {
-                    vigSize = Mathf.Clamp(vigSize - change, 0.05f, .8f);
-                    vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
-                    distortRadius = vigSize;
-                    distortionAmount = Mathf.Clamp(distortionAmount - change, 0.3f, 1.0f);
-                    scotomaIrregularity = Mathf.Clamp(scotomaIrregularity - change, 0.1f, 0.8f);
-                }
-
-                if (currSim == 2)
-                {
-                    vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
-                    vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
-                    cataractIrregularity = Mathf.Clamp(cataractIrregularity - change, 0.15f, 0.7f);
-                    globalFilter = Mathf.Clamp(globalFilter - change, 0.1f, 0.8f);
-                }
-                if ( currSim == 4)  // Oedema
-                {
-                    distortRadius = Mathf.Clamp(distortRadius - change, 0.08f, 0.7f);
-                    distortionAmount = distortRadius;
-                    vigSize = Mathf.Clamp(distortRadius-0.5f, .001f, 1.0f);
-                }
+                diseaseSeverity = 10; // Start at 10%
             }
         }
         
@@ -233,41 +157,46 @@ public class GetGaze : MonoBehaviour
         // Common parameters
         mat.SetVector("_GazeCenter", shaderCentre);
         mat.SetFloat("_EnableShader", enableShader ? 1f : 0f);
+        mat.SetFloat("_DiseaseSeverity", diseaseSeverity / 100f); // Normalize to 0-1
 
-        // Condition-specific parameters
+        // Condition-specific color parameters
         if (currSim == 0) // Glaucoma
         {
             mat.SetColor("_VignetteColor", vigColor);
-            mat.SetFloat("_VignetteSize", vigSize);
         }
         else if (currSim == 1) // AMD
         {
-            mat.SetFloat("_DistortionAmount", distortionAmount);
-            mat.SetFloat("_DistortionRadius", distortRadius);
             mat.SetColor("_VignetteColor", vigColor);
-            mat.SetFloat("_VignetteAlpha", vigAlpha);
-            mat.SetFloat("_VignetteSize", vigSize);
-            mat.SetFloat("_ScotomaIrregularity", scotomaIrregularity);
         }
         else if (currSim == 2) // Cataract
         {
             mat.SetColor("_CataractColor", vigColor);
-            mat.SetFloat("_VignetteAlpha", vigAlpha);
-            mat.SetFloat("_VignetteSize", vigSize);
-            mat.SetFloat("_CataractIrregularity", cataractIrregularity);
-            mat.SetFloat("_GlobalFilter", globalFilter);
-        }
-        else if (currSim == 4) // Oedema
-        {
-            mat.SetFloat("_DistortionAmount", distortionAmount);
-            mat.SetFloat("_DistortionRadius", distortRadius);
-            mat.SetFloat("_VignetteSize", vigSize);
         }
         
-        // Always set GlobalFilter for cataract material, even when not active
+        // Always set severity for cataract material in case of reset
         if (mat == cataractMaterial)
         {
-            mat.SetFloat("_GlobalFilter", currSim == 2 ? globalFilter : 0f);
+            mat.SetFloat("_DiseaseSeverity", currSim == 2 ? diseaseSeverity / 100f : 0f);
+        }
+    }
+    
+    void FixedUpdate()
+    {
+        // Handle severity adjustment in fixed timestep for smooth, frame-rate independent control
+        // rateOfChange is now interpreted as "severity units per second"
+        if (cp.hasStarted)
+        {
+            if (Input.GetKey(KeyCode.DownArrow)) // increase severity
+            {
+                float change = rateOfChange * Time.fixedDeltaTime;
+                diseaseSeverity = Mathf.Clamp(diseaseSeverity + Mathf.RoundToInt(change), 0, 100);
+            }
+
+            if (Input.GetKey(KeyCode.UpArrow)) // decrease severity
+            {
+                float change = rateOfChange * Time.fixedDeltaTime;
+                diseaseSeverity = Mathf.Clamp(diseaseSeverity - Mathf.RoundToInt(change), 0, 100);
+            }
         }
     }
 }

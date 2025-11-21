@@ -159,7 +159,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -100}
-  m_SizeDelta: {x: 950, y: 650}
+  m_SizeDelta: {x: 1050, y: 650}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &71147002
 MonoBehaviour:
@@ -256,13 +256,14 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\r\nCreated by Dr Philip Turnbull as part of Virtualeyes Lab at the School
-    of Optometry and Vision Science, University of Auckland.\r\n\r\nNot meant as
-    a realistic disease simulation, but a tool to help engage the public to talking
-    about the impact of eye diease on everyday tasks. \n\r\nBest experienced with
+  m_text: "<align=\"center\"><B>About</b></align>\r\n\nDeveloped by Dr Philip Turnbull
+    as part of the Virtualeyes Lab at the School of Optometry and Vision Science,
+    University of Auckland, Aotearoa New Zealand.\n\nThis tool is not intended as
+    a realistic disease simulation. Its purpose is to engage the public in conversations
+    about the impact of eye disease on everyday tasks.\n\r\nBest experienced with
     a Tobii eyetracker (e.g.,4C or 5), but falls back to mouse mode when one is not
     available.\r\n\r\nAvailable from https://github.com/fillupt/UnityTobiiLowVisionDefectDemo
-    \r\nLicensed under GPL-3.0.\n\n<align=\"center\"><i>Click to close\\n</i></align>\r\n"
+    \r\nLicensed under GPL-3.0.\n\n\n<align=\"center\"><i>Click to close</i></align>\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 80bdf9d98dc051b498cdd0feceef5985, type: 2}
   m_sharedMaterial: {fileID: -3556769473063746541, guid: 80bdf9d98dc051b498cdd0feceef5985,
@@ -2959,7 +2960,7 @@ MonoBehaviour:
   gT: {fileID: 1630822427}
   oT: {fileID: 551092147}
   image: {fileID: 1902497933}
-  rateOfChange: 0.4
+  rateOfChange: 40
   glaucomaMaterial: {fileID: 2100000, guid: c3dda55940a56924aaf88be30483e032, type: 2}
   amdMaterial: {fileID: 2100000, guid: 8e7d932dc9a6a2a49953be3ffd72682c, type: 2}
   cataractMaterial: {fileID: 2100000, guid: ce48fb81a355a1a45979d5b2efcc808c, type: 2}

@@ -2,10 +2,7 @@ Shader "Custom/OedemaShader" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _GazeCenter ("Gaze Center", Vector) = (0.5, 0.5, 0, 0)
-        _DistortionAmount ("Distortion Amount", Range(0, 1)) = 0.08
-        _DistortionRadius ("Distortion Radius", Range(0, 1)) = 0.08
-        _BlurStrength ("Blur Strength", Range(0, 10)) = 1
-        _VignetteSize ("Vignette Size", Range(0, 1)) = 0.001
+        _DiseaseSeverity ("Disease Severity", Range(0, 1)) = 0.0
         _EnableShader ("Enable Shader", Float) = 1
     }
 
@@ -25,10 +22,7 @@ Shader "Custom/OedemaShader" {
 
             sampler2D _MainTex;
             float2 _GazeCenter;
-            float _DistortionAmount;
-            float _DistortionRadius;
-            float _BlurStrength;
-            float _VignetteSize;
+            float _DiseaseSeverity;
             float _EnableShader;
 
             struct appdata {
@@ -53,20 +47,33 @@ Shader "Custom/OedemaShader" {
                     return tex2D(_MainTex, i.uv);
                 }
 
+                // Calculate parameters from disease severity (0-1)
+                float distortionRadius = lerp(0.12, 0.7, _DiseaseSeverity); // Grows from 0.12 to 0.7
+                float distortionAmount = distortionRadius; // Linked to radius
+                float blurStrength = 1.0;
+
                 // Localized distortion for oedema
                 float2 center = i.uv - _GazeCenter;
-                float distance = length(center) / _DistortionRadius;
+                float distance = length(center) / distortionRadius;
 
                 float distortion = 0;
                 if (distance <= 1.0) {
-                    distortion = _DistortionAmount * (1 - distance);
+                    distortion = distortionAmount * (1 - distance);
                 }
 
-                float blurFade = exp(-(distance * distance) / (2.0 * _BlurStrength * _BlurStrength));
+                float blurFade = exp(-(distance * distance) / (2.0 * blurStrength * blurStrength));
                 distortion *= blurFade;
 
                 float2 offset = distortion * center;
                 fixed4 col = tex2D(_MainTex, i.uv + offset);
+
+                // Apply contrast reduction in the distorted area (fluid accumulation reduces clarity)
+                if (distance <= 1.0) {
+                    float contrastLoss = blurFade * distortionAmount;
+                    float3 gray = dot(col.rgb, float3(0.299, 0.587, 0.114));
+                    float3 flatColor = gray * 0.7 + 0.15; // Flatten towards mid-gray
+                    col.rgb = lerp(col.rgb, flatColor, contrastLoss * 0.85);
+                }
 
                 return col;
             }

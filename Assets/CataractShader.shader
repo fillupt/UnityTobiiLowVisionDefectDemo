@@ -3,10 +3,7 @@ Shader "Custom/CataractShader" {
         _MainTex ("Texture", 2D) = "white" {}
         _GazeCenter ("Gaze Center", Vector) = (0.5, 0.5, 0, 0)
         _CataractColor ("Cataract Color", Color) = (1, 0.9, 0.7, 1)
-        _VignetteAlpha ("Vignette Alpha", Range(0, 1)) = 0.0
-        _VignetteSize ("Vignette Size", Range(0, 1)) = 0.7
-        _CataractIrregularity ("Cataract Irregularity", Range(0, 1)) = 0.0
-        _GlobalFilter ("Global Filter", Range(0, 1)) = 0.0
+        _DiseaseSeverity ("Disease Severity", Range(0, 1)) = 0.0
         _EnableShader ("Enable Shader", Float) = 1
     }
 
@@ -27,10 +24,7 @@ Shader "Custom/CataractShader" {
             sampler2D _MainTex;
             float2 _GazeCenter;
             fixed4 _CataractColor;
-            float _VignetteAlpha;
-            float _VignetteSize;
-            float _CataractIrregularity;
-            float _GlobalFilter;
+            float _DiseaseSeverity;
             float _EnableShader;
 
             struct appdata {
@@ -86,31 +80,33 @@ Shader "Custom/CataractShader" {
                 fixed4 col = tex2D(_MainTex, i.uv);
 
                 if (_EnableShader == 1) {
+                    // Calculate parameters from disease severity (0-1)
+                    float vignetteSize = lerp(1.0, 0.7, _DiseaseSeverity); // Shrinks from 1.0 to 0.7
+                    float vignetteAlpha = 0.0;
+                    float cataractIrregularity = lerp(0.15, 0.7, _DiseaseSeverity); // More irregular as severity increases
+                    float globalFilter = lerp(0.1, 0.8, _DiseaseSeverity); // Filter increases with severity
+
                     // Central clouding (reverse vignette with irregular shape)
                     float aspectRatio = _ScreenParams.x / _ScreenParams.y;
-                    float2 normalizedUV = (i.uv - _GazeCenter) / _VignetteSize;
+                    float2 normalizedUV = (i.uv - _GazeCenter) / vignetteSize;
                     normalizedUV.x *= aspectRatio;
                 
                 // Add organic distortion to the cataract boundary
                 float angle = atan2(normalizedUV.y, normalizedUV.x);
                 float baseRadius = length(normalizedUV);
                 
-                // Multi-frequency noise for irregular cataract boundary
-                // Using cosine ensures smooth wrapping at -pi/pi boundary
-                float irregularity = 0.0;
-                if (_CataractIrregularity > 0.01) {
-                    float noise1 = cos(angle * 2.5);
-                    float noise2 = cos(angle * 4.3 + 0.7);
-                    float noise3 = cos(angle * 6.7 - 0.4);
-                    irregularity = (noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2) * _CataractIrregularity * 0.15;
-                }
-                
-                float radius = baseRadius + irregularity;
-                
-                // Use wider smoothstep range for softer transition
-                float vignette = smoothstep(_VignetteAlpha - 0.1, 1.0 + 0.1, radius);
-                
-                // Reverse for central clouding
+                    // Multi-frequency noise for irregular cataract boundary
+                    // Using cosine ensures smooth wrapping at -pi/pi boundary
+                    float irregularity = 0.0;
+                    if (cataractIrregularity > 0.01) {
+                        float noise1 = cos(angle * 2.5);
+                        float noise2 = cos(angle * 4.3 + 0.7);
+                        float noise3 = cos(angle * 6.7 - 0.4);
+                        irregularity = (noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2) * cataractIrregularity * 0.15;
+                    }                    float radius = baseRadius + irregularity;
+                    
+                    // Use wider smoothstep range for softer transition
+                    float vignette = smoothstep(vignetteAlpha - 0.1, 1.0 + 0.1, radius);                // Reverse for central clouding
                 vignette = 1.0 - vignette;
 
                 // Add subtle organic color and opacity variation within the cataract
@@ -127,8 +123,9 @@ Shader "Custom/CataractShader" {
 
                 // Apply global filter (0.1 to 0.8) as full-screen catColour overlay
                 // This applies regardless of _EnableShader state
-                if (_GlobalFilter > 0.001) {
-                    col.rgb = lerp(col.rgb, _CataractColor.rgb, _GlobalFilter);
+                if (_DiseaseSeverity > 0.001) {
+                    float globalFilter = lerp(0.1, 0.8, _DiseaseSeverity);
+                    col.rgb = lerp(col.rgb, _CataractColor.rgb, globalFilter);
                 }
 
                 return col;

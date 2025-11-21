@@ -2,13 +2,8 @@ Shader "Custom/AMDShader" {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
         _GazeCenter ("Gaze Center", Vector) = (0.5, 0.5, 0, 0)
-        _DistortionAmount ("Distortion Amount", Range(0, 1)) = 0.5
-        _DistortionRadius ("Distortion Radius", Range(0, 1)) = 0.05
-        _BlurStrength ("Blur Strength", Range(0, 10)) = 1
         _VignetteColor ("Vignette Color", Color) = (0.5, 0.5, 0.5, 1)
-        _VignetteAlpha ("Vignette Alpha", Range(0, 1)) = 0.0
-        _VignetteSize ("Vignette Size", Range(0, 1)) = 0.05
-        _ScotomaIrregularity ("Scotoma Irregularity", Range(0, 1)) = 0.0
+        _DiseaseSeverity ("Disease Severity", Range(0, 1)) = 0.0
         _EnableShader ("Enable Shader", Float) = 1
     }
 
@@ -28,13 +23,8 @@ Shader "Custom/AMDShader" {
 
             sampler2D _MainTex;
             float2 _GazeCenter;
-            float _DistortionAmount;
-            float _DistortionRadius;
-            float _BlurStrength;
             fixed4 _VignetteColor;
-            float _VignetteAlpha;
-            float _VignetteSize;
-            float _ScotomaIrregularity;
+            float _DiseaseSeverity;
             float _EnableShader;
 
             struct appdata {
@@ -95,16 +85,24 @@ Shader "Custom/AMDShader" {
                     return tex2D(_MainTex, i.uv);
                 }
 
+                // Calculate parameters from disease severity (0-1)
+                float vignetteSize = lerp(0.05, 0.8, _DiseaseSeverity); // Grows from 0.05 to 0.8
+                float vignetteAlpha = vignetteSize; // Linked to size
+                float distortionRadius = lerp(0.1, 0.3, _DiseaseSeverity); // Subtle distortion area
+                float distortionAmount = lerp(0.1, 0.4, _DiseaseSeverity); // Reduced distortion strength
+                float scotomaIrregularity = lerp(0.1, 0.8, _DiseaseSeverity); // More irregular as severity increases
+                float blurStrength = 2.0; // Increased blur for softer edge
+
                 // Apply distortion for wet AMD
                 float2 center = i.uv - _GazeCenter;
-                float distance = length(center) / _DistortionRadius;
+                float distance = length(center) / distortionRadius;
 
                 float distortion = 0;
                 if (distance <= 1.0) {
-                    distortion = _DistortionAmount * (1 - distance);
+                    distortion = distortionAmount * (1 - distance);
                 }
 
-                float blurFade = exp(-(distance * distance) / (2.0 * _BlurStrength * _BlurStrength));
+                float blurFade = exp(-(distance * distance) / (2.0 * blurStrength * blurStrength));
                 distortion *= blurFade;
 
                 float2 offset = distortion * center;
@@ -112,7 +110,7 @@ Shader "Custom/AMDShader" {
 
                 // Central scotoma (reverse vignette with irregular shape)
                 float aspectRatio = _ScreenParams.x / _ScreenParams.y;
-                float2 normalizedUV = (i.uv - _GazeCenter) / _VignetteSize;
+                float2 normalizedUV = (i.uv - _GazeCenter) / vignetteSize;
                 normalizedUV.x *= aspectRatio;
                 
                 // Add organic distortion to the scotoma shape
@@ -122,17 +120,17 @@ Shader "Custom/AMDShader" {
                 // Multi-frequency noise for irregular scotoma boundary
                 // Using cosine ensures smooth wrapping at -pi/pi boundary
                 float irregularity = 0.0;
-                if (_ScotomaIrregularity > 0.01) {
+                if (scotomaIrregularity > 0.01) {
                     float noise1 = cos(angle * 3.0 + _Time.y * 0.1);
                     float noise2 = cos(angle * 5.0 - _Time.y * 0.15);
                     float noise3 = cos(angle * 7.0 + _Time.y * 0.08);
-                    irregularity = (noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2) * _ScotomaIrregularity * 0.2;
+                    irregularity = (noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2) * scotomaIrregularity * 0.2;
                 }
                 
                 float radius = baseRadius + irregularity;
                 
                 // Use wider smoothstep range for softer transition
-                float vignette = smoothstep(_VignetteAlpha - 0.1, 1.0 + 0.1, radius);
+                float vignette = smoothstep(vignetteAlpha - 0.1, 1.0 + 0.1, radius);
                 
                 // Reverse for central scotoma
                 vignette = 1.0 - vignette;
