@@ -11,6 +11,13 @@ public class GetGaze : MonoBehaviour
     public Toggle aT, cT, gT ,oT;
     public Image image;
     public float rateOfChange;
+    
+    // Separate materials for each condition
+    public Material glaucomaMaterial;
+    public Material amdMaterial;
+    public Material cataractMaterial;
+    public Material oedemaMaterial;
+    
     private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
     float lastSeenTime, distortionSize, distortionAmount, distortRadius, randomWetness;
@@ -47,11 +54,8 @@ public class GetGaze : MonoBehaviour
             {
                 enableShader = true;
                 currSim = 0;
-                distortionSize = 1.0f;
-                distortRadius = 0f;
-                vigColor   = new Color(0.2f, 0.2f, 0.2f, 1f);
-                vigInvert = false;
-                vigAlpha = 0f; 
+                image.material = glaucomaMaterial;
+                vigColor = new Color(0.2f, 0.2f, 0.2f, 1f);
                 vigSize = 1.0f;
             }
 
@@ -59,11 +63,8 @@ public class GetGaze : MonoBehaviour
             {
                 enableShader = true;
                 currSim = 2;
+                image.material = cataractMaterial;
                 vigColor = catColour;
-                distortionSize = 0.116f;
-                distortRadius = 0.08f;
-                distortionAmount = distortRadius;
-                vigInvert = true;
                 vigAlpha = 0f; 
                 vigSize = 0.7f;
             }
@@ -72,27 +73,22 @@ public class GetGaze : MonoBehaviour
             {
                 enableShader = true;
                 currSim = 1;
-                distortionSize = 0.116f;
-                vigColor   = Color.gray;
-                vigInvert = true;
+                image.material = amdMaterial;
+                vigColor = Color.gray;
                 vigAlpha = 0f; 
                 vigSize = 0.05f;
                 randomWetness = Random.Range(0.4f, 0.6f);
                 distortRadius = vigSize;
                 distortionAmount = randomWetness;
-
             }
 
             if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
             {
                 enableShader = true;
                 currSim = 4;
-                distortionSize = 0.116f;
+                image.material = oedemaMaterial;
                 distortRadius = 0.08f;
                 distortionAmount = distortRadius;
-                vigColor   = Color.gray;
-                vigInvert = true;
-                vigAlpha = 0f; 
                 vigSize = 0.001f;
                 randomWetness = Random.Range(0.6f, 0.9f);
             }
@@ -213,30 +209,43 @@ public class GetGaze : MonoBehaviour
                                         distortionSize);
         
         if (cp.hasStarted)
-            ApplyDistortion(distortionRect, shaderCentre, distortionAmount, distortRadius, vigColor, vigAlpha, vigSize, vigInvert, enableShader);
+            ApplyShaderParameters();
     }
 
-    private void ApplyDistortion(Rect region, Vector2 distortionCenter, float amount, float radius, Color vignetteColor, float vignetteAlpha, float vignetteSize, bool reverseVignette, bool enableShader)
+    private void ApplyShaderParameters()
     {
-        // Get the material assigned to the image component
-        Material material = image.material;
+        Material mat = image.material;
+        if (mat == null) return;
 
-        // Convert the distortion center from screen space to texture space
-        Vector2 distortionCenterTextureSpace = new Vector2(distortionCenter.x * region.width + region.x,
-                                                        distortionCenter.y * region.height + region.y);
+        // Common parameters
+        mat.SetVector("_GazeCenter", shaderCentre);
+        mat.SetFloat("_EnableShader", enableShader ? 1f : 0f);
 
-        // Set the distortion center and parameters in the material properties
-        material.SetVector("_DistortionCenter", distortionCenterTextureSpace);
-        material.SetFloat("_DistortionSize", Mathf.Min(region.width, region.height));
-        material.SetFloat("_DistortionAmount", amount);
-        material.SetFloat("_DistortionRadius", radius);
-
-        // Set the vignette parameters in the material properties
-        material.SetColor("_VignetteColor", vignetteColor);
-        material.SetFloat("_VignetteAlpha", vignetteAlpha);
-        material.SetFloat("_VignetteSize", vignetteSize);
-        material.SetFloat("_ReverseVignette", reverseVignette ? 1f : 0f);
-        material.SetFloat("_EnableShader", enableShader ? 1f : 0f);
-        image.material = material;
+        // Condition-specific parameters
+        if (currSim == 0) // Glaucoma
+        {
+            mat.SetColor("_VignetteColor", vigColor);
+            mat.SetFloat("_VignetteSize", vigSize);
+        }
+        else if (currSim == 1) // AMD
+        {
+            mat.SetFloat("_DistortionAmount", distortionAmount);
+            mat.SetFloat("_DistortionRadius", distortRadius);
+            mat.SetColor("_VignetteColor", vigColor);
+            mat.SetFloat("_VignetteAlpha", vigAlpha);
+            mat.SetFloat("_VignetteSize", vigSize);
+        }
+        else if (currSim == 2) // Cataract
+        {
+            mat.SetColor("_CataractColor", vigColor);
+            mat.SetFloat("_VignetteAlpha", vigAlpha);
+            mat.SetFloat("_VignetteSize", vigSize);
+        }
+        else if (currSim == 4) // Oedema
+        {
+            mat.SetFloat("_DistortionAmount", distortionAmount);
+            mat.SetFloat("_DistortionRadius", distortRadius);
+            mat.SetFloat("_VignetteSize", vigSize);
+        }
     }
 }

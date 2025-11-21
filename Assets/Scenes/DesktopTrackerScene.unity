@@ -2327,7 +2327,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.408805, g: 0.408805, b: 0.408805, a: 0.627451}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.8117647}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2960,6 +2960,10 @@ MonoBehaviour:
   oT: {fileID: 551092147}
   image: {fileID: 1902497933}
   rateOfChange: 0.4
+  glaucomaMaterial: {fileID: 2100000, guid: c3dda55940a56924aaf88be30483e032, type: 2}
+  amdMaterial: {fileID: 2100000, guid: 8e7d932dc9a6a2a49953be3ffd72682c, type: 2}
+  cataractMaterial: {fileID: 2100000, guid: ce48fb81a355a1a45979d5b2efcc808c, type: 2}
+  oedemaMaterial: {fileID: 2100000, guid: e95ce91901d1d0148ae541c9242c2697, type: 2}
   cp: {fileID: 1626885289}
   shaderCentre: {x: 0, y: 0}
 --- !u!114 &1626885291
@@ -3555,7 +3559,7 @@ GameObject:
   - component: {fileID: 1868075472}
   - component: {fileID: 1868075471}
   m_Layer: 5
-  m_Name: logo (1)
+  m_Name: LVSLogoAboveFog
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
