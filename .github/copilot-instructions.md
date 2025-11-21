@@ -6,27 +6,30 @@ This is a Unity 2022.3.62f3 educational application that simulates visual impair
 ## Architecture
 
 ### Core Components
-- **GetGaze.cs** - Central controller managing Tobii API integration, simulation state, and shader parameters
+- **GetGaze.cs** - Central controller managing Tobii API integration, simulation state, and shader parameters across 4 separate materials
 - **ChangePicture.cs** - UI/input handler for image switching and scene lifecycle
-- **DistortionShader.shader** - Custom surface shader applying visual impairment effects with circular vignettes and distortion
+- **GlaucomaShader.shader** - Unlit shader with peripheral vision loss and gradient darkening (grey to black)
+- **AMDShader.shader** - Unlit shader with central scotoma, irregular boundaries, Perlin noise color variation, and distortion
+- **CataractShader.shader** - Unlit shader with clouding overlay, irregular boundaries, and Perlin noise for mottled appearance
+- **OedemaShader.shader** - Unlit shader with localized distortion from fluid accumulation
 - **StartMouseMode.cs** - Fallback mode using mouse position when Tobii hardware unavailable
 
 ### Data Flow
 1. Tobii API provides gaze coordinates → `GetGaze.Update()` converts to normalized screen space
-2. Keyboard input (G/A/C/O) selects simulation type → sets shader parameters in `GetGaze`
-3. Arrow keys modify severity → adjusts `vigSize`, `vigAlpha`, `distortRadius` based on `currSim` state
-4. `ApplyDistortion()` pushes parameters to material → shader renders effect centered on gaze/mouse
+2. Keyboard input (G/A/C/O) selects simulation type → switches active material and sets shader parameters in `GetGaze`
+3. Arrow keys modify severity → adjusts condition-specific parameters (`vigSize`, `vigAlpha`, `distortRadius`, `scotomaIrregularity`, `cataractIrregularity`) based on `currSim` state
+4. `ApplyShaderParameters()` pushes parameters to active material → shader renders effect centered on gaze/mouse
 
 ## Key Patterns & Conventions
 
 ### Simulation State Machine
-Each vision defect has distinct shader parameter profiles set in `GetGaze.Update()`:
-- **Glaucoma (G)**: Peripheral vision loss - `vigInvert=false`, grows `vigSize` with severity
-- **AMD (A)**: Central vision loss - `vigInvert=true`, small `vigSize` (0.05-0.7), random wetness distortion
-- **Cataract (C)**: Clouding - `catColour` overlay, large `vigSize` (0.7-1.0), controlled opacity fade
-- **Oedema (O)**: Distortion - radius-based distortion with exponential size calculation
+Each vision defect uses a dedicated shader with condition-specific parameters set in `GetGaze.Update()`:
+- **Glaucoma (G, currSim=0)**: Uses `GlaucomaShader` - Peripheral vision loss with gradient darkening, grows `vigSize` (0.05-0.8) with severity
+- **AMD (A, currSim=1)**: Uses `AMDShader` - Central scotoma with irregular boundaries (multi-frequency sine waves), Perlin noise color variation (±2%), distortion scales with severity (0.3-1.0), `scotomaIrregularity` (0.1-0.8)
+- **Cataract (C, currSim=2)**: Uses `CataractShader` - Central clouding overlay with irregular boundaries, Perlin noise for mottled appearance (±5%), `vigSize` (0.7-1.0), `cataractIrregularity` (0.15-0.7)
+- **Oedema (O, currSim=4)**: Uses `OedemaShader` - Localized distortion with Gaussian blur fade, radius-based distortion with exponential size calculation
 
-When modifying simulations, preserve the inversion logic and parameter ranges to maintain medical accuracy.
+When modifying simulations, preserve parameter ranges and irregularity patterns to maintain medical accuracy. Each shader implements Perlin noise via hash function + bilinear interpolation + FBM (3 octaves) for organic variation.
 
 ### Tobii Integration
 - Check `TobiiAPI.IsConnected` before accessing eye-tracking
@@ -50,18 +53,26 @@ When modifying simulations, preserve the inversion logic and parameter ranges to
 3. Right-click to simulate user absence and test timeout behavior
 
 ### Adding New Simulation Types
-1. Add toggle to scene (reference `aT`, `cT`, `gT`, `oT` pattern)
-2. Add key check in `GetGaze.Update()` (e.g., `if (Input.GetKeyUp(KeyCode.X) && xT.isOn)`)
-3. Set `currSim` to new int value, define shader parameters (`vigColor`, `vigSize`, `distortionAmount`, etc.)
-4. Add severity adjustment logic in Up/Down arrow blocks using `Mathf.Clamp` for safety
-5. Update README.md with new keybinding
+1. Create new unlit shader in `Assets/` with appropriate visual effect (reference existing shaders)
+2. Create corresponding material and assign shader to it
+3. Add material reference in `GetGaze.cs` (e.g., `public Material newConditionMaterial;`)
+4. Add toggle to scene (reference `aT`, `cT`, `gT`, `oT` pattern)
+5. Add key check in `GetGaze.Update()` with material switch: `image.material = newConditionMaterial;`
+6. Set `currSim` to new int value, initialize condition-specific parameters
+7. Add severity adjustment logic in Up/Down arrow blocks using `Mathf.Clamp` for safety
+8. Add parameter passing in `ApplyShaderParameters()` method
+9. Update README.md with new keybinding
 
 ### Modifying Shader Effects
-- Material parameters set via `material.SetFloat/SetVector/SetColor` in `ApplyDistortion()`
-- Shader properties defined in `DistortionShader.shader` Properties block
+- Each condition has its own shader file and material - prefer separate shaders over conditional branching
+- Material parameters set via `mat.SetFloat/SetVector/SetColor` in `ApplyShaderParameters()`
+- All shaders are **unlit** (converted from surface shaders to prevent darkening)
 - `_EnableShader` float gates entire effect (0=passthrough)
 - Distortion uses Gaussian blur fade: `exp(-(distance * distance) / (2.0 * _BlurStrength * _BlurStrength))`
-- Vignette respects aspect ratio via `_ScreenParams` normalization
+- Vignette respects aspect ratio via `aspectRatio = _ScreenParams.x / _ScreenParams.y` applied to x-coordinate
+- **Perlin Noise Pattern**: For organic variation, use hash function → bilinear interpolation noise → FBM with 3 octaves (see AMDShader/CataractShader)
+- **Irregular Boundaries**: Use multi-frequency sine waves on angle (e.g., `sin(angle * 3.0) + sin(angle * 5.0)`) combined with FBM
+- Coordinate space: `_GazeCenter` in normalized UV (0-1), shaders calculate distance from gaze for masking/distortion
 
 ### Building the Application
 - Unity target: Standalone Windows (companyName: "fillupt", productName: "LV Simulator")
@@ -74,14 +85,23 @@ When modifying simulations, preserve the inversion logic and parameter ranges to
 - **Video Player**: Plays demonstration content on backtick key
 
 ## Common Pitfalls
-- Don't modify shader center directly - always update via `shaderCentre` in `GetGaze` (handles coordinate space conversion)
+- Don't modify shader center directly - always update via `shaderCentre` in `GetGaze` (handles coordinate space conversion and aspect ratio)
 - Severity changes use `Time.deltaTime` for frame-rate independence - preserve this pattern
+- When adding irregularity parameters, always initialize them in the KeyCode check AND adjust in up/down arrow severity controls
+- Use separate materials per condition - don't try to combine all effects into one shader (performance and maintainability)
+- Aspect ratio correction: multiply x-coordinate by `aspectRatio`, not y-coordinate (fixes horizontal stretching)
+- Perlin noise UV coordinates must move with gaze center for proper scotoma tracking
 - `RandomlyFlip.cs` animates logo - uses coroutine pattern, don't convert to Update loop
 - Scene 0 is the only scene - `SceneManager.LoadScene(0)` is intentional reload, not multi-scene navigation
 - `hasStarted` flag prevents input before user clicks "Begin" button - check this in any new input handlers
 
 ## File Organization
-- All scripts in `Assets/` root (flat structure by design)
-- Shader and material paired: `DistortionShader.shader` + `DistortionMat.mat`
+- All scripts in `Assets/Scripts/` directory
+- Four condition-specific shader+material pairs:
+  - `GlaucomaShader.shader` + `GlaucomaMat.mat`
+  - `AMDShader.shader` + `AMDMat.mat`
+  - `CataractShader.shader` + `CataractMat.mat`
+  - `OedemaShader.shader` + `OedemaMat.mat`
 - Single scene: `Assets/Scenes/DesktopTrackerScene.unity`
 - Media assets: `Assets/images/`, `Assets/movie/`, `Assets/logo/`
+- Legacy files: `DistortionShader.shader` and `DistortionMat.mat` (deprecated, may be removed)

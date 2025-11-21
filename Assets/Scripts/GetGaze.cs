@@ -22,7 +22,7 @@ public class GetGaze : MonoBehaviour
     float inactiveTimeOut = 1.5f;
     float lastSeenTime, distortionSize, distortionAmount, distortRadius, randomWetness;
     int currSim;
-    float vigAlpha, vigSize;
+    float vigAlpha, vigSize, scotomaIrregularity, cataractIrregularity, globalFilter;
     bool vigInvert, enableShader;
     private Camera cam;
     public ChangePicture cp;
@@ -32,6 +32,7 @@ public class GetGaze : MonoBehaviour
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
         cam          = Camera.main;
+        globalFilter = 0f; // Initialize to 0
         ResetShader();
     }
 
@@ -39,6 +40,7 @@ public class GetGaze : MonoBehaviour
         shaderCentre = new Vector2(0.5f, 0.5f);
         currSim = -1;
         enableShader = false;
+        globalFilter = 0f; // Reset global filter
     }
 
     void Update()
@@ -67,6 +69,8 @@ public class GetGaze : MonoBehaviour
                 vigColor = catColour;
                 vigAlpha = 0f; 
                 vigSize = 0.7f;
+                cataractIrregularity = 0.15f; // Start with slight irregularity
+                globalFilter = 0.1f; // Start with minimal global filter
             }
 
             if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
@@ -77,7 +81,8 @@ public class GetGaze : MonoBehaviour
                 vigColor = Color.gray;
                 vigAlpha = 0f; 
                 vigSize = 0.05f;
-                randomWetness = Random.Range(0.4f, 0.6f);
+                scotomaIrregularity = 0.1f; // Start with slight irregularity
+                randomWetness = Random.Range(0.5f, 0.7f); // Increased range
                 distortRadius = vigSize;
                 distortionAmount = randomWetness;
             }
@@ -103,15 +108,19 @@ public class GetGaze : MonoBehaviour
                 }
                 if (currSim == 1) // AMD 
                 {
-                    vigSize = Mathf.Clamp(vigSize - change, 0.1f, .7f);
+                    vigSize = Mathf.Clamp(vigSize - change, 0.1f, .8f);
                     vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
                     distortRadius = vigSize;
+                    distortionAmount = Mathf.Clamp(distortionAmount - change, 0.3f, 1.0f);
+                    scotomaIrregularity = Mathf.Clamp(scotomaIrregularity - change, 0.1f, 0.8f);
                     //distortionAmount = distortRadius * randomWetness;
                 }
                 if (currSim == 2 ) //cataract
                 {
                     vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
                     vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
+                    cataractIrregularity = Mathf.Clamp(cataractIrregularity - change, 0.15f, 0.7f);
+                    globalFilter = Mathf.Clamp(globalFilter - change, 0.1f, 0.85f); // applies a uniform filter across the whole screen
                 }
                 if ( currSim == 4)  // Oedema
                 {
@@ -131,15 +140,19 @@ public class GetGaze : MonoBehaviour
 
                 if (currSim == 1 )
                 {
-                    vigSize = Mathf.Clamp(vigSize - change, 0.05f, .7f);
+                    vigSize = Mathf.Clamp(vigSize - change, 0.05f, .8f);
                     vigAlpha = Mathf.Clamp(vigSize, 0f, 0.6f);
                     distortRadius = vigSize;
+                    distortionAmount = Mathf.Clamp(distortionAmount - change, 0.3f, 1.0f);
+                    scotomaIrregularity = Mathf.Clamp(scotomaIrregularity - change, 0.1f, 0.8f);
                 }
 
                 if (currSim == 2)
                 {
                     vigSize = Mathf.Clamp(vigSize - change/2f, 0.7f, 1.0f); 
                     vigAlpha = Mathf.Clamp(vigAlpha - change, 0f, .6f);
+                    cataractIrregularity = Mathf.Clamp(cataractIrregularity - change, 0.15f, 0.7f);
+                    globalFilter = Mathf.Clamp(globalFilter - change, 0.1f, 0.8f);
                 }
                 if ( currSim == 4)  // Oedema
                 {
@@ -234,18 +247,27 @@ public class GetGaze : MonoBehaviour
             mat.SetColor("_VignetteColor", vigColor);
             mat.SetFloat("_VignetteAlpha", vigAlpha);
             mat.SetFloat("_VignetteSize", vigSize);
+            mat.SetFloat("_ScotomaIrregularity", scotomaIrregularity);
         }
         else if (currSim == 2) // Cataract
         {
             mat.SetColor("_CataractColor", vigColor);
             mat.SetFloat("_VignetteAlpha", vigAlpha);
             mat.SetFloat("_VignetteSize", vigSize);
+            mat.SetFloat("_CataractIrregularity", cataractIrregularity);
+            mat.SetFloat("_GlobalFilter", globalFilter);
         }
         else if (currSim == 4) // Oedema
         {
             mat.SetFloat("_DistortionAmount", distortionAmount);
             mat.SetFloat("_DistortionRadius", distortRadius);
             mat.SetFloat("_VignetteSize", vigSize);
+        }
+        
+        // Always set GlobalFilter for cataract material, even when not active
+        if (mat == cataractMaterial)
+        {
+            mat.SetFloat("_GlobalFilter", currSim == 2 ? globalFilter : 0f);
         }
     }
 }
