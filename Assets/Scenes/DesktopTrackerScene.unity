@@ -256,14 +256,34 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<align=\"center\"><B>About</b></align>\r\n\nDeveloped by Dr Philip Turnbull
+  m_text: '<align="center"><B>About</b></align>
+
+
+    Developed by Dr Philip Turnbull
     as part of the Virtualeyes Lab at the School of Optometry and Vision Science,
-    University of Auckland, Aotearoa New Zealand.\n\nThis tool is not intended as
-    a realistic disease simulation. Its purpose is to engage the public in conversations
-    about the impact of eye disease on everyday tasks.\n\r\nBest experienced with
-    a Tobii eyetracker (e.g.,4C or 5), but falls back to mouse mode when one is not
-    available.\r\n\r\nAvailable from https://github.com/fillupt/UnityTobiiLowVisionDefectDemo
-    \r\nLicensed under GPL-3.0.\n\n\n<align=\"center\"><i>Click to close</i></align>\r\n"
+    University of Auckland, Aotearoa New Zealand.
+
+
+    This tool is not intended
+    as a realistic disease simulation. Its purpose is to engage the public in conversations
+    about the impact of eye disease on everyday tasks.
+
+    
+
+    Best experienced
+    with a Tobii eyetracker (e.g.,4C or 5), but falls back to mouse mode when one
+    is not available.
+
+    
+
+    Available from https://github.com/fillupt/UnityTobiiLowVisionDefectDemo,
+    and is licensed under GPL-3.0. Please feel free to make suggestions at p.turnbull@auckland.ac.nz
+
+
+    <align="center"><i>Click
+    to close</i></align>
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 80bdf9d98dc051b498cdd0feceef5985, type: 2}
   m_sharedMaterial: {fileID: -3556769473063746541, guid: 80bdf9d98dc051b498cdd0feceef5985,
