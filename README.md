@@ -4,11 +4,12 @@ An educational application demonstrating the effects of common visual impairment
 
 ## Features
 
-Simulates four types of vision loss:
+Simulates five types of vision loss:
 - **Glaucoma** - Peripheral vision loss
 - **Age-Related Macular Degeneration (AMD)** - Central vision loss
 - **Cataract** - Clouding and reduced contrast
 - **Oedema** - Visual distortion
+- **Diabetic Retinopathy** - Scattered hemorrhages, cotton wool spots, and macular edema
 
 The shader effects follow your gaze in real-time, providing an immersive experience of how these conditions affect daily activities. If an eye tracking is unavailable, it defaults to 'mouse' mode to simulate gaze. 
 
@@ -17,7 +18,7 @@ The shader effects follow your gaze in real-time, providing an immersive experie
 - **Number keys (1-0, -, =)** - Switch between different images
 - **Left/Right arrows** - Navigate through images
 - **Backtick (`)** - Play video demonstration
-- **G, A, C, O** - Activate Glaucoma, AMD, Cataract, or Oedema simulation (toggle must be enabled)
+- **G, A, C, O, D** - Activate Glaucoma, AMD, Cataract, Oedema, or Diabetic Retinopathy simulation
 - **Up/Down arrows** - Increase/decrease severity of active simulation
 - **R** - Reset shader to neutral state
 - **Escape** - Return to menu or quit application

@@ -33,7 +33,7 @@ public class ChangePicture : MonoBehaviour
     public AudioSource audioSource;
     private void Start()
     {
-        statusText.text = "LV Simulator V" + Application.version;
+        statusText.text = "v" + Application.version;
         startBut.onClick.AddListener(Begin);
         
         // Configure video player audio properly

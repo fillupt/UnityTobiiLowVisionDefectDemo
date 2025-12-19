@@ -1,6 +1,7 @@
 ﻿using Tobii.Gaming;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class GetGaze : MonoBehaviour
 {
@@ -8,7 +9,6 @@ public class GetGaze : MonoBehaviour
     public GameObject noUserCanvas;
     public StartMouseMode smm;
     public Color catColour;
-    public Toggle aT, cT, gT ,oT;
     public Image image;
     public float rateOfChange;
     
@@ -17,6 +17,7 @@ public class GetGaze : MonoBehaviour
     public Material amdMaterial;
     public Material cataractMaterial;
     public Material oedemaMaterial;
+    public Material diabetesMaterial;
     
     private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
@@ -27,11 +28,24 @@ public class GetGaze : MonoBehaviour
     private Camera cam;
     public ChangePicture cp;
     public Vector2 shaderCentre;
+    
+    // Severity slider UI
+    public GameObject severitySliderPanel;
+    public Slider severitySlider;
+    public TMP_Text severityConditionText;
+    public CanvasGroup severityCanvasGroup;
+    private float sliderDisplayTimer = 0f;
+    private float sliderDisplayDuration = 1f;
+    private float sliderFadeDuration = 0.5f;
     private void Start()
     {
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
         cam          = Camera.main;
+        if (severitySliderPanel != null)
+        {
+            severitySliderPanel.SetActive(false);
+        }
         ResetShader();
     }
 
@@ -44,6 +58,36 @@ public class GetGaze : MonoBehaviour
 
     void Update()
     {
+        // Handle slider display timer and fade out
+        if (sliderDisplayTimer > 0)
+        {
+            sliderDisplayTimer -= Time.deltaTime;
+            
+            if (severityCanvasGroup != null)
+            {
+                if (sliderDisplayTimer <= 0)
+                {
+                    // Fully faded out, hide panel
+                    severitySliderPanel.SetActive(false);
+                    severityCanvasGroup.alpha = 1f; // Reset alpha for next display
+                }
+                else if (sliderDisplayTimer <= sliderFadeDuration)
+                {
+                    // Fade out phase
+                    severityCanvasGroup.alpha = sliderDisplayTimer / sliderFadeDuration;
+                }
+                else
+                {
+                    // Fully visible phase
+                    severityCanvasGroup.alpha = 1f;
+                }
+            }
+            else if (sliderDisplayTimer <= 0 && severitySliderPanel != null)
+            {
+                // Fallback if no canvas group
+                severitySliderPanel.SetActive(false);
+            }
+        }
         
         if (cp.hasStarted){
             if (Input.GetKeyUp(KeyCode.R)) //Reset
@@ -51,39 +95,52 @@ public class GetGaze : MonoBehaviour
                 ResetShader();
             }
 
-            if (Input.GetKeyUp(KeyCode.G) && gT.isOn) //glaucoma
+            if (Input.GetKeyUp(KeyCode.G)) //glaucoma
             {
                 enableShader = true;
                 currSim = 0;
                 image.material = glaucomaMaterial;
                 vigColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-                diseaseSeverity = 10; // Start at 10%
+                diseaseSeverity = 0;
+                ShowSeveritySlider();
             }
 
-            if (Input.GetKeyUp(KeyCode.C) && cT.isOn) //cataract
+            if (Input.GetKeyUp(KeyCode.C)) //cataract
             {
                 enableShader = true;
                 currSim = 2;
                 image.material = cataractMaterial;
                 vigColor = catColour;
-                diseaseSeverity = 10; // Start at 10%
+                diseaseSeverity = 0;
+                ShowSeveritySlider();
             }
 
-            if (Input.GetKeyUp(KeyCode.A) && aT.isOn)//AMD
+            if (Input.GetKeyUp(KeyCode.A)) //AMD
             {
                 enableShader = true;
                 currSim = 1;
                 image.material = amdMaterial;
                 vigColor = Color.gray;
-                diseaseSeverity = 10; // Start at 10%
+                diseaseSeverity = 0;
+                ShowSeveritySlider();
             }
 
-            if (Input.GetKeyUp(KeyCode.O) && oT.isOn) //oedema
+            if (Input.GetKeyUp(KeyCode.O)) //oedema
             {
                 enableShader = true;
                 currSim = 4;
                 image.material = oedemaMaterial;
-                diseaseSeverity = 10; // Start at 10%
+                diseaseSeverity = 0;
+                ShowSeveritySlider();
+            }
+
+            if (Input.GetKeyUp(KeyCode.D)) //diabetic retinopathy
+            {
+                enableShader = true;
+                currSim = 3;
+                image.material = diabetesMaterial;
+                diseaseSeverity = 0;
+                ShowSeveritySlider();
             }
         }
         
@@ -184,19 +241,64 @@ public class GetGaze : MonoBehaviour
     {
         // Handle severity adjustment in fixed timestep for smooth, frame-rate independent control
         // rateOfChange is now interpreted as "severity units per second"
-        if (cp.hasStarted)
+        if (cp.hasStarted && currSim >= 0) // Only allow adjustment when a condition is selected
         {
             if (Input.GetKey(KeyCode.DownArrow)) // increase severity
             {
                 float change = rateOfChange * Time.fixedDeltaTime;
                 diseaseSeverity = Mathf.Clamp(diseaseSeverity + Mathf.RoundToInt(change), 0, 100);
+                ShowSeveritySlider();
             }
 
             if (Input.GetKey(KeyCode.UpArrow)) // decrease severity
             {
                 float change = rateOfChange * Time.fixedDeltaTime;
                 diseaseSeverity = Mathf.Clamp(diseaseSeverity - Mathf.RoundToInt(change), 0, 100);
+                ShowSeveritySlider();
             }
+        }
+    }
+    
+    void ShowSeveritySlider()
+    {
+        if (severitySliderPanel == null || severitySlider == null) return;
+        
+        // Show the panel
+        severitySliderPanel.SetActive(true);
+        sliderDisplayTimer = sliderDisplayDuration + sliderFadeDuration; // Add fade duration to total time
+        
+        // Reset alpha to fully visible
+        if (severityCanvasGroup != null)
+        {
+            severityCanvasGroup.alpha = 1f;
+        }
+        
+        // Update slider value
+        severitySlider.value = diseaseSeverity;
+        
+        // Update condition name
+        if (severityConditionText != null)
+        {
+            string conditionName = "None";
+            switch (currSim)
+            {
+                case 0:
+                    conditionName = "Glaucoma";
+                    break;
+                case 1:
+                    conditionName = "AMD";
+                    break;
+                case 2:
+                    conditionName = "Cataract";
+                    break;
+                case 3:
+                    conditionName = "Diabeties";
+                    break;
+                case 4:
+                    conditionName = "Oedema";
+                    break;
+            }
+            severityConditionText.text = conditionName;
         }
     }
 }

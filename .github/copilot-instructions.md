@@ -1,23 +1,24 @@
 # Unity Tobii Low Vision Defect Demo - AI Coding Agent Instructions
 
 ## Project Overview
-This is a Unity 2022.3.62f3 educational application that simulates visual impairments (glaucoma, AMD, cataracts, oedema) using Tobii 4C eye-tracking hardware. The shader-based effects follow the user's gaze to demonstrate how vision loss affects daily activities.
+This is a Unity 2022.3.62f3 educational application that simulates visual impairments (glaucoma, AMD, cataracts, oedema, diabetic retinopathy) using Tobii 4C eye-tracking hardware. The shader-based effects follow the user's gaze to demonstrate how vision loss affects daily activities.
 
 ## Architecture
 
 ### Core Components
-- **GetGaze.cs** - Central controller managing Tobii API integration, simulation state, and shader parameters across 4 separate materials
+- **GetGaze.cs** - Central controller managing Tobii API integration, simulation state, and shader parameters across 5 separate materials
 - **ChangePicture.cs** - UI/input handler for image switching and scene lifecycle
 - **GlaucomaShader.shader** - Unlit shader with peripheral vision loss and gradient darkening (grey to black)
 - **AMDShader.shader** - Unlit shader with central scotoma, irregular boundaries, Perlin noise color variation, and distortion
 - **CataractShader.shader** - Unlit shader with clouding overlay, irregular boundaries, and Perlin noise for mottled appearance
 - **OedemaShader.shader** - Unlit shader with localized distortion from fluid accumulation
+- **DiabeticRetinopathyShader.shader** - Unlit shader with scattered hemorrhages, cotton wool spots, and macular edema
 - **StartMouseMode.cs** - Fallback mode using mouse position when Tobii hardware unavailable
 
 ### Data Flow
 1. Tobii API provides gaze coordinates → `GetGaze.Update()` converts to normalized screen space
-2. Keyboard input (G/A/C/O) selects simulation type → switches active material and sets shader parameters in `GetGaze`
-3. Arrow keys modify severity → adjusts condition-specific parameters (`vigSize`, `vigAlpha`, `distortRadius`, `scotomaIrregularity`, `cataractIrregularity`) based on `currSim` state
+2. Keyboard input (G/A/C/O/D) selects simulation type → switches active material and sets shader parameters in `GetGaze`
+3. Arrow keys modify severity → adjusts condition-specific parameters based on `currSim` state
 4. `ApplyShaderParameters()` pushes parameters to active material → shader renders effect centered on gaze/mouse
 
 ## Key Patterns & Conventions
@@ -26,8 +27,9 @@ This is a Unity 2022.3.62f3 educational application that simulates visual impair
 Each vision defect uses a dedicated shader with condition-specific parameters set in `GetGaze.Update()`:
 - **Glaucoma (G, currSim=0)**: Uses `GlaucomaShader` - Peripheral vision loss with gradient darkening, grows `vigSize` (0.05-0.8) with severity
 - **AMD (A, currSim=1)**: Uses `AMDShader` - Central scotoma with irregular boundaries (multi-frequency sine waves), Perlin noise color variation (±2%), distortion scales with severity (0.3-1.0), `scotomaIrregularity` (0.1-0.8)
-- **Cataract (C, currSim=2)**: Uses `CataractShader` - Central clouding overlay with irregular boundaries, Perlin noise for mottled appearance (±5%), `vigSize` (0.7-1.0), `cataractIrregularity` (0.15-0.7)
-- **Oedema (O, currSim=4)**: Uses `OedemaShader` - Localized distortion with Gaussian blur fade, radius-based distortion with exponential size calculation
+- **Cataract (C, currSim=2)**: Uses `CataractShader` - Central clouding overlay with irregular boundaries, Perlin noise for mottled appearance (±5%), linear severity scaling for faster progression
+- **Diabetic Retinopathy (D, currSim=3)**: Uses `DiabeticRetinopathyShader` - Gaze-contingent scattered dark spots (hemorrhages/microaneurysms), cotton wool spots (whitish patches), and macular edema with distortion/blur that accelerates after 50% severity
+- **Oedema (O, currSim=4)**: Uses `OedemaShader` - Localized distortion with Gaussian blur fade, smooth circular appearance without irregular boundaries
 
 When modifying simulations, preserve parameter ranges and irregularity patterns to maintain medical accuracy. Each shader implements Perlin noise via hash function + bilinear interpolation + FBM (3 octaves) for organic variation.
 
@@ -40,7 +42,7 @@ When modifying simulations, preserve parameter ranges and irregularity patterns 
 ### UI Keyboard Controls
 - Number keys (1-0, -, =): Switch images from `theIms` array
 - Backtick (`): Play video content
-- G/A/C/O + corresponding toggle enabled: Activate simulation
+- G/A/C/O/D: Activate Glaucoma, AMD, Cataract, Oedema, or Diabetic Retinopathy simulation
 - R: Reset shader to neutral state
 - Up/Down arrows: Increase/decrease severity
 - Escape: Reload scene or quit (context-dependent on `SOVSlogo.enabled`)
@@ -97,11 +99,12 @@ When modifying simulations, preserve parameter ranges and irregularity patterns 
 
 ## File Organization
 - All scripts in `Assets/Scripts/` directory
-- Four condition-specific shader+material pairs:
+- Shaders in `Assets/Shaders/` directory
+- Five condition-specific shader+material pairs:
   - `GlaucomaShader.shader` + `GlaucomaMat.mat`
   - `AMDShader.shader` + `AMDMat.mat`
   - `CataractShader.shader` + `CataractMat.mat`
+  - `DiabeticRetinopathyShader.shader` + `diabetesMaterial.mat`
   - `OedemaShader.shader` + `OedemaMat.mat`
 - Single scene: `Assets/Scenes/DesktopTrackerScene.unity`
 - Media assets: `Assets/images/`, `Assets/movie/`, `Assets/logo/`
-- Legacy files: `DistortionShader.shader` and `DistortionMat.mat` (deprecated, may be removed)
