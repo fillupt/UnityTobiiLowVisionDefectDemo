@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2545.3335
     height: 1334.6667
   m_ShowMode: 4
-  m_Title: Game
+  m_Title: Inspector
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -192,8 +192,8 @@ MonoBehaviour:
     y: 0
     width: 199.33333
     height: 861.3333
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 201, y: 226}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: GameView
+  m_Name: PackageManagerWindow
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -218,15 +218,15 @@ MonoBehaviour:
     y: 0
     width: 1686
     height: 861.3333
-  m_MinSize: {x: 200, y: 200}
+  m_MinSize: {x: 280, y: 250}
   m_MaxSize: {x: 4000, y: 4000}
-  m_ActualView: {fileID: 12}
+  m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 12}
   - {fileID: 14}
   - {fileID: 15}
   - {fileID: 16}
-  m_Selected: 0
+  m_Selected: 2
   m_LastSelected: 1
 --- !u!114 &10
 MonoBehaviour:
@@ -352,7 +352,7 @@ MonoBehaviour:
     m_HSlider: 0
     m_VSlider: 0
     m_IgnoreScrollWheelUntilClicked: 0
-    m_EnableMouseInput: 1
+    m_EnableMouseInput: 0
     m_EnableSliderZoomHorizontal: 0
     m_EnableSliderZoomVertical: 0
     m_UniformScale: 1
@@ -424,9 +424,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 4edcffff
+      m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 42deffff
+      m_ExpandedIDs: 7ed9ffff96d9ffff66daffffccdcffffe4dcffffe0ddffff66e3ffff7ee3ffff76e4ffff66efffff1afbffff805f0000885f0000d25f0000fc5f00001860000090600000ac6000003878000040780000d078000014790000e07d0000347e0000467e00005e7e00007a7e0000be7e0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1003,9 +1003,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 0, y: 0, z: 0}
+    m_Target: {x: 1048.8679, y: 687.6496, z: 112.30133}
     speed: 2
-    m_Value: {x: 0, y: 0, z: 0}
+    m_Value: {x: 1048.8679, y: 687.6496, z: 112.30133}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1051,13 +1051,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
+    m_Target: {x: -0.023185953, y: -0.014500397, z: -0.00033635003, w: 0.99962753}
     speed: 2
-    m_Value: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
+    m_Value: {x: -0.023185918, y: -0.014500375, z: -0.0003363495, w: 0.999626}
   m_Size:
-    m_Target: 10
+    m_Target: 615.30225
     speed: 2
-    m_Value: 10
+    m_Value: 615.30225
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1216,9 +1216,9 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 7.3333335
-    y: 945.3334
+    y: 947.3334
     width: 1884.3334
-    height: 398.3333
+    height: 391.3333
   m_SerializedDataModeController:
     m_DataMode: 0
     m_PreferredDataMode: 0
@@ -1241,7 +1241,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets
+    - Assets/Scripts
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1251,16 +1251,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets
+  - Assets/Scripts
   m_LastFoldersGridSize: 16
   m_LastProjectPath: C:\UnityTobiiLowVisionDefectDemo
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 004d0000
-    m_LastClickedID: 19712
-    m_ExpandedIDs: 000000004e660000
+    m_SelectedIDs: 98760000
+    m_LastClickedID: 30360
+    m_ExpandedIDs: 00000000506100009e76000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1289,7 +1289,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000004e660000
+    m_ExpandedIDs: 0000000050610000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1315,8 +1315,8 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: a8080000
-    m_LastClickedInstanceID: 2216
+    m_SelectedInstanceIDs: 40780000
+    m_LastClickedInstanceID: 30784
     m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000c05d000000000000c4010000d84c0000528600005c860000
     m_RenameOverlay:
