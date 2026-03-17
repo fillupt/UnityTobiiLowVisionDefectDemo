@@ -5,6 +5,15 @@ using TMPro;
 
 public class GetGaze : MonoBehaviour
 {
+    private enum VisionCondition
+    {
+        None = -1,
+        Glaucoma = 0,
+        AMD = 1,
+        Cataract = 2,
+        DiabeticRetinopathy = 3,
+        Oedema = 4
+    }
 
     public GameObject noUserCanvas;
     public StartMouseMode smm;
@@ -18,13 +27,14 @@ public class GetGaze : MonoBehaviour
     public Material cataractMaterial;
     public Material oedemaMaterial;
     public Material diabetesMaterial;
+    public BlurPrepassRenderer blurRenderer;
     
     private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
-    float lastSeenTime, distortionSize;
-    int currSim;
+    float lastSeenTime;
+    VisionCondition currentCondition = VisionCondition.None;
     int diseaseSeverity = 0; // 0-100 disease severity
-    bool vigInvert, enableShader;
+    bool enableShader;
     private Camera cam;
     public ChangePicture cp;
     public Vector2 shaderCentre;
@@ -42,6 +52,14 @@ public class GetGaze : MonoBehaviour
         noUserCanvas.SetActive(false);
         lastSeenTime = Time.time;
         cam          = Camera.main;
+        if (blurRenderer == null)
+        {
+            blurRenderer = GetComponent<BlurPrepassRenderer>();
+            if (blurRenderer == null)
+            {
+                blurRenderer = gameObject.AddComponent<BlurPrepassRenderer>();
+            }
+        }
         if (severitySliderPanel != null)
         {
             severitySliderPanel.SetActive(false);
@@ -51,9 +69,14 @@ public class GetGaze : MonoBehaviour
 
     public void ResetShader(){
         shaderCentre = new Vector2(0.5f, 0.5f);
-        currSim = -1;
+        currentCondition = VisionCondition.None;
         enableShader = false;
         diseaseSeverity = 0;
+
+        if (blurRenderer != null && image != null && image.material != null)
+        {
+            blurRenderer.ClearBlur(image.material);
+        }
     }
 
     void Update()
@@ -89,57 +112,16 @@ public class GetGaze : MonoBehaviour
             }
         }
         
-        if (cp.hasStarted){
+        if (cp.hasStarted)
+        {
             if (Input.GetKeyUp(KeyCode.R)) //Reset
             {
                 ResetShader();
             }
 
-            if (Input.GetKeyUp(KeyCode.G)) //glaucoma
+            if (TryGetSelectedCondition(out VisionCondition selectedCondition))
             {
-                enableShader = true;
-                currSim = 0;
-                image.material = glaucomaMaterial;
-                vigColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-                diseaseSeverity = 0;
-                ShowSeveritySlider();
-            }
-
-            if (Input.GetKeyUp(KeyCode.C)) //cataract
-            {
-                enableShader = true;
-                currSim = 2;
-                image.material = cataractMaterial;
-                vigColor = catColour;
-                diseaseSeverity = 0;
-                ShowSeveritySlider();
-            }
-
-            if (Input.GetKeyUp(KeyCode.A)) //AMD
-            {
-                enableShader = true;
-                currSim = 1;
-                image.material = amdMaterial;
-                vigColor = Color.gray;
-                diseaseSeverity = 0;
-                ShowSeveritySlider();
-            }
-
-            if (Input.GetKeyUp(KeyCode.O)) //oedema
-            {
-                enableShader = true;
-                currSim = 4;
-                image.material = oedemaMaterial;
-                diseaseSeverity = 0;
-                ShowSeveritySlider();
-            }
-
-            if (Input.GetKeyUp(KeyCode.D)) //diabetic retinopathy
-            {
-                enableShader = true;
-                currSim = 3;
-                image.material = diabetesMaterial;
-                diseaseSeverity = 0;
+                ActivateCondition(selectedCondition);
                 ShowSeveritySlider();
             }
         }
@@ -196,14 +178,102 @@ public class GetGaze : MonoBehaviour
         }
         bool ShowNoUser = hasTimedOut || smm.mouseModeOn;
         noUserCanvas.SetActive(ShowNoUser);
-        // Calculate the region to distort based on the normalized position and distortion size
-        Rect distortionRect = new Rect(shaderCentre.x - distortionSize * 0.5f,
-                                       shaderCentre.y - distortionSize * 0.5f,
-                                        distortionSize,
-                                        distortionSize);
         
         if (cp.hasStarted)
             ApplyShaderParameters();
+    }
+
+    private bool TryGetSelectedCondition(out VisionCondition selectedCondition)
+    {
+        selectedCondition = VisionCondition.None;
+
+        // Preserve existing priority by processing keys in the original order.
+        if (Input.GetKeyUp(KeyCode.G))
+        {
+            selectedCondition = VisionCondition.Glaucoma;
+        }
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            selectedCondition = VisionCondition.Cataract;
+        }
+        if (Input.GetKeyUp(KeyCode.A))
+        {
+            selectedCondition = VisionCondition.AMD;
+        }
+        if (Input.GetKeyUp(KeyCode.O))
+        {
+            selectedCondition = VisionCondition.Oedema;
+        }
+        if (Input.GetKeyUp(KeyCode.D))
+        {
+            selectedCondition = VisionCondition.DiabeticRetinopathy;
+        }
+
+        return selectedCondition != VisionCondition.None;
+    }
+
+    private void ActivateCondition(VisionCondition condition)
+    {
+        enableShader = true;
+        currentCondition = condition;
+        diseaseSeverity = 0;
+
+        Material conditionMaterial = GetConditionMaterial(condition);
+        if (conditionMaterial != null)
+        {
+            image.material = conditionMaterial;
+        }
+
+        switch (condition)
+        {
+            case VisionCondition.Glaucoma:
+                vigColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+                break;
+            case VisionCondition.AMD:
+                vigColor = Color.gray;
+                break;
+            case VisionCondition.Cataract:
+                vigColor = catColour;
+                break;
+        }
+    }
+
+    private Material GetConditionMaterial(VisionCondition condition)
+    {
+        switch (condition)
+        {
+            case VisionCondition.Glaucoma:
+                return glaucomaMaterial;
+            case VisionCondition.AMD:
+                return amdMaterial;
+            case VisionCondition.Cataract:
+                return cataractMaterial;
+            case VisionCondition.DiabeticRetinopathy:
+                return diabetesMaterial;
+            case VisionCondition.Oedema:
+                return oedemaMaterial;
+            default:
+                return null;
+        }
+    }
+
+    private string GetConditionDisplayName(VisionCondition condition)
+    {
+        switch (condition)
+        {
+            case VisionCondition.Glaucoma:
+                return "Glaucoma";
+            case VisionCondition.AMD:
+                return "AMD";
+            case VisionCondition.Cataract:
+                return "Cataract";
+            case VisionCondition.DiabeticRetinopathy:
+                return "Diabetic Retinopathy";
+            case VisionCondition.Oedema:
+                return "Oedema";
+            default:
+                return "None";
+        }
     }
 
     private void ApplyShaderParameters()
@@ -217,23 +287,71 @@ public class GetGaze : MonoBehaviour
         mat.SetFloat("_DiseaseSeverity", diseaseSeverity / 100f); // Normalize to 0-1
 
         // Condition-specific color parameters
-        if (currSim == 0) // Glaucoma
+        switch (currentCondition)
         {
-            mat.SetColor("_VignetteColor", vigColor);
-        }
-        else if (currSim == 1) // AMD
-        {
-            mat.SetColor("_VignetteColor", vigColor);
-        }
-        else if (currSim == 2) // Cataract
-        {
-            mat.SetColor("_CataractColor", vigColor);
+            case VisionCondition.Glaucoma:
+            case VisionCondition.AMD:
+                mat.SetColor("_VignetteColor", vigColor);
+                break;
+            case VisionCondition.Cataract:
+                mat.SetColor("_CataractColor", vigColor);
+                break;
         }
         
-        // Always set severity for cataract material in case of reset
+        // Always set severity for cataract material in case of reset.
+        // Remap [0,100] -> [0.05,1.0] so the shader's minimum floor (Range(0.05,1)) is
+        // respected and a mild effect is visible even at slider position 0.
         if (mat == cataractMaterial)
         {
-            mat.SetFloat("_DiseaseSeverity", currSim == 2 ? diseaseSeverity / 100f : 0f);
+            mat.SetFloat("_DiseaseSeverity", currentCondition == VisionCondition.Cataract ? Mathf.Lerp(0.05f, 1.0f, diseaseSeverity / 100f) : 0f);
+        }
+
+        ApplyConditionBlur(mat);
+    }
+
+    private void ApplyConditionBlur(Material mat)
+    {
+        if (blurRenderer == null)
+        {
+            return;
+        }
+
+        float severity = diseaseSeverity / 100f;
+        Texture sourceTexture = image != null && image.mainTexture != null ? image.mainTexture : Texture2D.whiteTexture;
+
+        switch (currentCondition)
+        {
+            case VisionCondition.Cataract:
+            {
+                // Mirror the [0.05, 1.0] remap used when setting _DiseaseSeverity.
+                float effectiveSeverity = Mathf.Lerp(0.05f, 1.0f, severity);
+                int passes = Mathf.RoundToInt(Mathf.Lerp(1f, 5f, effectiveSeverity));
+                float amount = effectiveSeverity;
+                float radius = Mathf.Lerp(0.35f, 0.75f, effectiveSeverity);
+                blurRenderer.ApplyBlur(mat, sourceTexture, amount, radius, passes);
+                break;
+            }
+            case VisionCondition.AMD:
+            {
+                float t = Mathf.Clamp01((severity - 0.30f) / 0.70f);
+                int passes = t > 0f ? Mathf.RoundToInt(Mathf.Lerp(1f, 3f, t)) : 0;
+                float amount = t * 0.50f;
+                float radius = Mathf.Lerp(0.15f, 0.30f, severity);
+                blurRenderer.ApplyBlur(mat, sourceTexture, amount, radius, passes);
+                break;
+            }
+            case VisionCondition.Oedema:
+            {
+                float t = Mathf.Clamp01((severity - 0.50f) / 0.50f);
+                int passes = t > 0f ? Mathf.RoundToInt(Mathf.Lerp(1f, 2f, t)) : 0;
+                float amount = t * 0.35f;
+                float radius = Mathf.Lerp(0.10f, 0.20f, severity);
+                blurRenderer.ApplyBlur(mat, sourceTexture, amount, radius, passes);
+                break;
+            }
+            default:
+                blurRenderer.ClearBlur(mat);
+                break;
         }
     }
     
@@ -241,7 +359,7 @@ public class GetGaze : MonoBehaviour
     {
         // Handle severity adjustment in fixed timestep for smooth, frame-rate independent control
         // rateOfChange is now interpreted as "severity units per second"
-        if (cp.hasStarted && currSim >= 0) // Only allow adjustment when a condition is selected
+        if (cp.hasStarted && currentCondition != VisionCondition.None) // Only allow adjustment when a condition is selected
         {
             if (Input.GetKey(KeyCode.DownArrow)) // increase severity
             {
@@ -279,26 +397,7 @@ public class GetGaze : MonoBehaviour
         // Update condition name
         if (severityConditionText != null)
         {
-            string conditionName = "None";
-            switch (currSim)
-            {
-                case 0:
-                    conditionName = "Glaucoma";
-                    break;
-                case 1:
-                    conditionName = "AMD";
-                    break;
-                case 2:
-                    conditionName = "Cataract";
-                    break;
-                case 3:
-                    conditionName = "Diabeties";
-                    break;
-                case 4:
-                    conditionName = "Oedema";
-                    break;
-            }
-            severityConditionText.text = conditionName;
+            severityConditionText.text = GetConditionDisplayName(currentCondition);
         }
     }
 }

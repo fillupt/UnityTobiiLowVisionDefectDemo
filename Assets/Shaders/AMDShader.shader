@@ -5,6 +5,9 @@ Shader "Custom/AMDShader" {
         _VignetteColor ("Vignette Color", Color) = (0.5, 0.5, 0.5, 1)
         _DiseaseSeverity ("Disease Severity", Range(0, 1)) = 0.0
         _EnableShader ("Enable Shader", Float) = 1
+        _BlurTex ("Blurred Texture", 2D) = "white" {}
+        _BlurAmount ("Blur Blend Amount", Range(0, 1)) = 0.0
+        _BlurRadius ("Blur Gaze Radius", Float) = 0.5
     }
 
     SubShader {
@@ -22,10 +25,13 @@ Shader "Custom/AMDShader" {
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+            sampler2D _BlurTex;
             float2 _GazeCenter;
             fixed4 _VignetteColor;
             float _DiseaseSeverity;
             float _EnableShader;
+            float _BlurAmount;
+            float _BlurRadius;
 
             struct appdata {
                 float4 vertex : POSITION;
@@ -106,7 +112,14 @@ Shader "Custom/AMDShader" {
                 distortion *= blurFade;
 
                 float2 offset = distortion * center;
-                fixed4 col = tex2D(_MainTex, i.uv + offset);
+                float2 sampleUV = i.uv + offset;
+                float blurAspect = _ScreenParams.x / _ScreenParams.y;
+                float2 blurDelta = (i.uv - _GazeCenter) * float2(blurAspect, 1.0);
+                float blurDistanceSq = dot(blurDelta, blurDelta);
+                float blurSigma = max(_BlurRadius, 0.001);
+                float blurMask = exp(-blurDistanceSq / (2.0 * blurSigma * blurSigma));
+                float blurBlend = saturate(_BlurAmount) * blurMask;
+                fixed4 col = lerp(tex2D(_MainTex, sampleUV), tex2D(_BlurTex, sampleUV), blurBlend);
 
                 // Central scotoma (reverse vignette with irregular shape)
                 float aspectRatio = _ScreenParams.x / _ScreenParams.y;

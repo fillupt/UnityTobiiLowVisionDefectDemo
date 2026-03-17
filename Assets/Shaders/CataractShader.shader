@@ -3,8 +3,11 @@ Shader "Custom/CataractShader" {
         _MainTex ("Texture", 2D) = "white" {}
         _GazeCenter ("Gaze Center", Vector) = (0.5, 0.5, 0, 0)
         _CataractColor ("Cataract Color", Color) = (1, 0.9, 0.7, 1)
-        _DiseaseSeverity ("Disease Severity", Range(0, 1)) = 0.0
+        _DiseaseSeverity ("Disease Severity", Range(0.05, 1)) = 0.05
         _EnableShader ("Enable Shader", Float) = 1
+        _BlurTex ("Blurred Texture", 2D) = "white" {}
+        _BlurAmount ("Blur Blend Amount", Range(0, 1)) = 0.0
+        _BlurRadius ("Blur Gaze Radius", Float) = 0.5
     }
 
     SubShader {
@@ -22,10 +25,13 @@ Shader "Custom/CataractShader" {
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+            sampler2D _BlurTex;
             float2 _GazeCenter;
             fixed4 _CataractColor;
             float _DiseaseSeverity;
             float _EnableShader;
+            float _BlurAmount;
+            float _BlurRadius;
 
             struct appdata {
                 float4 vertex : POSITION;
@@ -77,14 +83,21 @@ Shader "Custom/CataractShader" {
             }
 
             fixed4 frag (v2f i) : SV_Target {
-                fixed4 col = tex2D(_MainTex, i.uv);
+                float blurAspect = _ScreenParams.x / _ScreenParams.y;
+                float2 blurDelta = (i.uv - _GazeCenter) * float2(blurAspect, 1.0);
+                float blurDistanceSq = dot(blurDelta, blurDelta);
+                float blurSigma = max(_BlurRadius, 0.001);
+                float blurMask = exp(-blurDistanceSq / (2.0 * blurSigma * blurSigma));
+                float blurBlend = saturate(_BlurAmount) * blurMask;
+
+                fixed4 col = lerp(tex2D(_MainTex, i.uv), tex2D(_BlurTex, i.uv), blurBlend);
 
                 // Use linear severity scaling for faster progression
                 float scaledSeverity = _DiseaseSeverity; // Linear for more direct severity response
 
                 if (_EnableShader == 1 && _DiseaseSeverity > 0.001) {
                     // Calculate parameters from disease severity (0-1)
-                    float vignetteSize = lerp(1.0, 0.7, scaledSeverity); // Shrinks from 1.0 to 0.7
+                    float vignetteSize = lerp(1.0, 0.6, scaledSeverity); // Shrinks from 1.0 to 0.7
                     float vignetteAlpha = 0.0;
                     float cataractIrregularity = lerp(0.10, 0.7, scaledSeverity); // More irregular as severity increases
 
@@ -144,10 +157,20 @@ Shader "Custom/CataractShader" {
                     
                     // First, reduce contrast - cataracts scatter light, reducing distinction between light/dark
                     // Flatten the image toward mid-gray as severity increases
-                    float contrastReduction = lerp(0.0, 0.4, scaledSeverity) * spatialFalloff;
+                    //float contrastReduction = lerp(0.0, 0.7, scaledSeverity) * spatialFalloff;
                     float gray = dot(col.rgb, float3(0.299, 0.587, 0.114)); // Luminance
-                    col.rgb = lerp(col.rgb, float3(gray, gray, gray) * 0.5 + 0.25, contrastReduction);
-                    
+                    //col.rgb = lerp(col.rgb, float3(gray, gray, gray) * 0.5 + 0.25, contrastReduction);
+                    float contrastReduction = lerp(0.0, 0.7, scaledSeverity) * spatialFalloff;
+
+                    // 1. Reduce Saturation/Local Contrast
+                    col.rgb = lerp(col.rgb, float3(gray, gray, gray), contrastReduction);
+
+                    // 2. Optional: The "Veiling Glare" effect
+                    // Cataracts cause light to scatter, making dark areas feel "lifted" by nearby light.
+                    // We can simulate this by slightly boosting the blacks based on the overall gray.
+                    float veil = gray * contrastReduction * 0.2; // Adjust 0.2 to control "glow"
+                    col.rgb += veil;
+
                     // Then apply yellow filter using same quadratic curve for consistency
                     float globalFilter = lerp(0.0, 0.8, scaledSeverity); 
                     col.rgb = lerp(col.rgb, _CataractColor.rgb, globalFilter);
