@@ -66,7 +66,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BlurAmount: 0
-    - _BlurRadius: 0.37
+    - _BlurRadius: 0.75
     - _BlurStrength: 0.24
     - _BumpScale: 1
     - _CataractIrregularity: 0.7
@@ -102,7 +102,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DistortionCenter: {r: 0.7351563, g: 0.24166662, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GazeCenter: {r: 0, g: 0.82215035, b: 0, a: 0}
+    - _GazeCenter: {r: 0.74287194, g: 1, b: 0, a: 0}
     - _GlobalTint: {r: 0.5283019, g: 0.52171385, b: 0.3372493, a: 0.14117648}
     - _VignetteColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
