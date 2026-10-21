@@ -141,8 +141,7 @@ Shader "Custom/CataractShader" {
                 }
 
                 // Apply contrast reduction and yellowing for cataract simulation
-                // This applies regardless of _EnableShader state
-                if (_DiseaseSeverity > 0.001) {
+                if (_EnableShader == 1 && _DiseaseSeverity > 0.001) {
                     float scaledSeverity = _DiseaseSeverity * _DiseaseSeverity; // Quadratic makes low severities much subtler
                     
                     // Calculate distance from gaze center for spatial variation

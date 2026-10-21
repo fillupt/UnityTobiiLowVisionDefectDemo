@@ -35,8 +35,10 @@ When modifying simulations, preserve parameter ranges and irregularity patterns 
 
 ### Tobii Integration
 - Check `TobiiAPI.IsConnected` before accessing eye-tracking
+- Valid gaze requires `UserPresence` present and `GazePoint.IsRecent()` (~500 ms)
 - Mouse fallback: Right-click simulates "user not present", left position = gaze substitute
 - Timeout logic: `inactiveTimeOut` (1.5s) gradually disables shader when user not detected
+- `noUserCanvas` banner copy is chosen in `TryGetBannerMessage()` (no tracker, mouse mode, signal lost, disconnected)
 - Never remove mouse mode - it's essential for testing without hardware
 
 ### UI Keyboard Controls

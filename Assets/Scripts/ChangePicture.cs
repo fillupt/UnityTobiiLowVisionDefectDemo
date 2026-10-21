@@ -37,17 +37,35 @@ public class ChangePicture : MonoBehaviour
         startBut.onClick.AddListener(Begin);
         
         // Configure video player audio properly
+        if (audioSource == null)
+        {
+            audioSource = vp.GetTargetAudioSource(0);
+        }
+        if (audioSource == null)
+        {
+            audioSource = vp.GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = vp.gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.mute = false;
+        audioSource.volume = 1f;
+        audioSource.spatialBlend = 0f;
+
         vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
         vp.controlledAudioTrackCount = 1;
         vp.EnableAudioTrack(0, true);
         vp.SetTargetAudioSource(0, audioSource);
+        vp.SetDirectAudioMute(0, false);
+        vp.SetDirectAudioVolume(0, 1f);
         
     }
 
     private void OnVideoPrepared(VideoPlayer source)
     {
         // Video is ready to play with audio
-        Debug.Log("Video prepared and ready");
+        Debug.Log($"Video prepared. Audio tracks: {source.audioTrackCount}, target source: {(source.GetTargetAudioSource(0) != null ? source.GetTargetAudioSource(0).name : "NONE")}, listener present: {FindObjectOfType<AudioListener>() != null}");
     }
 
     void Update()
@@ -113,6 +131,7 @@ public class ChangePicture : MonoBehaviour
         introCanvas.SetActive(false);
         runtimeCanvas.SetActive(true);
         gg.enabled = true;
+        gg.RegisterUserActivity();
         hasStarted = true;
         
         // Prepare video player

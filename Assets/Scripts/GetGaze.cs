@@ -16,7 +16,18 @@ public class GetGaze : MonoBehaviour
     }
 
     public GameObject noUserCanvas;
+    public CanvasGroup noUserCanvasGroup;
+    public Text noUserBannerText;
+    public GameObject forceMouseModeButton;
+    public GameObject overlayBackground;
+    public GameObject overlayInstructions;
     public StartMouseMode smm;
+    public float overlayFadeDuration = 0.35f;
+
+    const string NoTrackerDetectedMessage = "No eye tracker detected — gaze follows mouse";
+    const string ExplicitMouseModeMessage = "Force mouse mode — eye tracker overridden";
+    const string SignalLostMessage = "No eye tracking signal — look at the screen";
+    const string TrackerDisconnectedMessage = "Eye tracker disconnected — using mouse";
     public Color catColour;
     public Image image;
     public float rateOfChange;
@@ -31,7 +42,11 @@ public class GetGaze : MonoBehaviour
     
     private Color vigColor = Color.gray;
     float inactiveTimeOut = 1.5f;
-    float lastSeenTime;
+    float lastActivityTime;
+    Vector3 lastMousePosition;
+    const float MouseMoveThresholdPixels = 2f;
+    static readonly float MouseMoveThresholdSq = MouseMoveThresholdPixels * MouseMoveThresholdPixels;
+    float overlayTargetAlpha;
     VisionCondition currentCondition = VisionCondition.None;
     int diseaseSeverity = 0; // 0-100 disease severity
     bool enableShader;
@@ -47,10 +62,61 @@ public class GetGaze : MonoBehaviour
     private float sliderDisplayTimer = 0f;
     private float sliderDisplayDuration = 1f;
     private float sliderFadeDuration = 0.5f;
+    private bool trackerEverConnected;
+    private bool hadValidEyeSignal;
+
     private void Start()
     {
-        noUserCanvas.SetActive(false);
-        lastSeenTime = Time.time;
+        if (noUserCanvas != null)
+        {
+            noUserCanvas.SetActive(false);
+            if (noUserCanvasGroup == null)
+            {
+                noUserCanvasGroup = noUserCanvas.GetComponent<CanvasGroup>();
+            }
+
+            if (noUserCanvasGroup != null)
+            {
+                noUserCanvasGroup.alpha = 0f;
+                noUserCanvasGroup.blocksRaycasts = false;
+                noUserCanvasGroup.interactable = false;
+            }
+
+            Transform overlayRoot = noUserCanvas.transform;
+            if (noUserBannerText == null)
+            {
+                noUserBannerText = noUserCanvas.GetComponentInChildren<Text>(true);
+            }
+
+            if (forceMouseModeButton == null)
+            {
+                Transform buttonTransform = overlayRoot.Find("mouseClickBut");
+                if (buttonTransform != null)
+                {
+                    forceMouseModeButton = buttonTransform.gameObject;
+                }
+            }
+
+            if (overlayBackground == null)
+            {
+                Transform backgroundTransform = overlayRoot.Find("noUserBackgroundIm");
+                if (backgroundTransform != null)
+                {
+                    overlayBackground = backgroundTransform.gameObject;
+                }
+            }
+
+            if (overlayInstructions == null)
+            {
+                Transform instructionsTransform = overlayRoot.Find("instrucTMPText");
+                if (instructionsTransform != null)
+                {
+                    overlayInstructions = instructionsTransform.gameObject;
+                }
+            }
+        }
+        lastActivityTime = Time.time;
+        lastMousePosition = Input.mousePosition;
         cam          = Camera.main;
         if (blurRenderer == null)
         {
@@ -65,6 +131,11 @@ public class GetGaze : MonoBehaviour
             severitySliderPanel.SetActive(false);
         }
         ResetShader();
+    }
+
+    public void RegisterUserActivity()
+    {
+        lastActivityTime = Time.time;
     }
 
     public void ResetShader(){
@@ -117,70 +188,184 @@ public class GetGaze : MonoBehaviour
             if (Input.GetKeyUp(KeyCode.R)) //Reset
             {
                 ResetShader();
+                RegisterUserActivity();
             }
 
             if (TryGetSelectedCondition(out VisionCondition selectedCondition))
             {
                 ActivateCondition(selectedCondition);
                 ShowSeveritySlider();
+                RegisterUserActivity();
             }
         }
         
-        bool hasTimedOut = false;
+        bool isConnected = TobiiAPI.IsConnected;
 
-        if (TobiiAPI.IsConnected)
+        if (isConnected)
+        {
+            trackerEverConnected = true;
+        }
+
+        if (isConnected && !smm.mouseModeOn)
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
-            if (userPresence.IsUserPresent()) 
+            GazePoint gazePoint = TobiiAPI.GetGazePoint();
+            bool hasValidSignal = userPresence.IsUserPresent() && gazePoint.IsRecent();
+
+            if (hasValidSignal)
             {
-                enableShader = true;
-                lastSeenTime = Time.time;
-                GazePoint gazePoint = TobiiAPI.GetGazePoint();
+                hadValidEyeSignal = true;
+                RegisterUserActivity();
                 shaderCentre.x = gazePoint.Screen.x / cam.pixelWidth;
                 shaderCentre.y = gazePoint.Screen.y / cam.scaledPixelHeight;
             }
-            else
-            {
-                // do a graduated release to no user mode
-                if ((Time.time - lastSeenTime) > inactiveTimeOut/2f)
-                    enableShader = false;
-
-                if ((Time.time - lastSeenTime) > inactiveTimeOut)
-                    hasTimedOut = true;
-            }
         }
-        else if (smm.mouseModeOn){
-                enableShader = true;
-                lastSeenTime = Time.time;
-                shaderCentre.x = Mathf.Clamp01(Input.mousePosition.x / cam.pixelWidth);
-                shaderCentre.y = Mathf.Clamp01(Input.mousePosition.y / cam.pixelHeight);
-        }
-        else // simulate with mouse if no Tobii connected
+        else if (smm.mouseModeOn)
         {
-            // simulate user not present by holding right mouse button
-            if (!Input.GetMouseButton(1))
-            {
-                //enableShader = true;
-                lastSeenTime = Time.time;
-                shaderCentre.x = Mathf.Clamp01(Input.mousePosition.x / cam.pixelWidth);
-                shaderCentre.y = Mathf.Clamp01(Input.mousePosition.y / cam.pixelHeight);
-            }
-            else
-            {
-                // do a graduated release to no user mode
-                if ((Time.time - lastSeenTime) > inactiveTimeOut/2f)
-                    enableShader = false;
-
-                if ((Time.time - lastSeenTime) > inactiveTimeOut)
-                    hasTimedOut = true;
-            }      
-
+            UpdateMouseGazeDrive();
         }
-        bool ShowNoUser = hasTimedOut || smm.mouseModeOn;
-        noUserCanvas.SetActive(ShowNoUser);
-        
+        else if (!Input.GetMouseButton(1))
+        {
+            UpdateMouseGazeDrive();
+        }
+
+        bool usingEyeTracking = isConnected && !smm.mouseModeOn;
+        float timeout = usingEyeTracking ? inactiveTimeOut : inactiveTimeOut * 2f;
+        bool overlayIdle = (Time.time - lastActivityTime) > timeout;
+        UpdateTrackingOverlay(isConnected, overlayIdle);
+        ApplyInactivityEffects(overlayIdle);
+
         if (cp.hasStarted)
             ApplyShaderParameters();
+    }
+
+    private void UpdateMouseGazeDrive()
+    {
+        Vector3 mousePosition = Input.mousePosition;
+        if ((mousePosition - lastMousePosition).sqrMagnitude > MouseMoveThresholdSq)
+        {
+            RegisterUserActivity();
+            lastMousePosition = mousePosition;
+        }
+
+        shaderCentre.x = Mathf.Clamp01(mousePosition.x / cam.pixelWidth);
+        shaderCentre.y = Mathf.Clamp01(mousePosition.y / cam.pixelHeight);
+    }
+
+    private void ApplyInactivityEffects(bool overlayIdle)
+    {
+        // Hide the effect only once the overlay has fully faded in (or if there is nothing to show)
+        bool overlayFullyShown = noUserCanvasGroup == null
+            ? overlayTargetAlpha > 0f
+            : overlayTargetAlpha <= 0f || noUserCanvasGroup.alpha >= 0.999f;
+        enableShader = !(overlayIdle && overlayFullyShown)
+            && (currentCondition != VisionCondition.None || hadValidEyeSignal || smm.mouseModeOn);
+    }
+
+    private void UpdateTrackingOverlay(bool isConnected, bool overlayIdle)
+    {
+        if (cp == null || !cp.hasStarted || noUserCanvas == null)
+        {
+            if (noUserCanvas != null)
+            {
+                noUserCanvas.SetActive(false);
+            }
+
+            return;
+        }
+
+        bool showForceMouseButton = isConnected || trackerEverConnected;
+        smm.SetForceMouseModeAvailable(showForceMouseButton);
+
+        // Keep the overlay while the pointer is over the button so it can be clicked
+        bool hoveringButton = noUserCanvasGroup != null && noUserCanvasGroup.alpha > 0.5f
+            && forceMouseModeButton != null && forceMouseModeButton.activeInHierarchy
+            && RectTransformUtility.RectangleContainsScreenPoint(
+                (RectTransform)forceMouseModeButton.transform, Input.mousePosition);
+        overlayIdle |= hoveringButton;
+
+        string message = null;
+        bool showBanner = overlayIdle && TryGetBannerMessage(isConnected, smm.mouseModeOn, out message);
+        bool showOverlayContent = overlayIdle && (showBanner || showForceMouseButton);
+        overlayTargetAlpha = showOverlayContent ? 1f : 0f;
+
+        noUserCanvas.SetActive(true);
+        ApplyOverlayFade();
+
+        if (noUserCanvasGroup != null && noUserCanvasGroup.alpha <= 0.001f && overlayTargetAlpha <= 0f)
+        {
+            return;
+        }
+
+        if (forceMouseModeButton != null)
+        {
+            forceMouseModeButton.SetActive(showForceMouseButton);
+        }
+
+        if (noUserBannerText != null)
+        {
+            noUserBannerText.gameObject.SetActive(showBanner);
+            if (showBanner)
+            {
+                noUserBannerText.text = message;
+            }
+        }
+
+        bool showInstructionPanel = showBanner && !smm.mouseModeOn;
+        if (overlayBackground != null)
+        {
+            overlayBackground.SetActive(showInstructionPanel);
+        }
+
+        if (overlayInstructions != null)
+        {
+            overlayInstructions.SetActive(showInstructionPanel);
+        }
+    }
+
+    private void ApplyOverlayFade()
+    {
+        if (noUserCanvasGroup == null)
+        {
+            return;
+        }
+
+        float fadeSpeed = overlayFadeDuration > 0f ? Time.deltaTime / overlayFadeDuration : 1f;
+        noUserCanvasGroup.alpha = Mathf.MoveTowards(noUserCanvasGroup.alpha, overlayTargetAlpha, fadeSpeed);
+        bool visible = noUserCanvasGroup.alpha > 0.01f;
+        noUserCanvasGroup.blocksRaycasts = visible;
+        noUserCanvasGroup.interactable = visible;
+    }
+
+    private bool TryGetBannerMessage(bool isConnected, bool forceMouseModeOn, out string message)
+    {
+        message = null;
+
+        if (forceMouseModeOn && (isConnected || trackerEverConnected))
+        {
+            message = ExplicitMouseModeMessage;
+            return true;
+        }
+
+        if (isConnected)
+        {
+            if (hadValidEyeSignal)
+            {
+                message = SignalLostMessage;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (trackerEverConnected)
+        {
+            message = TrackerDisconnectedMessage;
+            return true;
+        }
+
+        message = NoTrackerDetectedMessage;
+        return true;
     }
 
     private bool TryGetSelectedCondition(out VisionCondition selectedCondition)
@@ -363,16 +548,26 @@ public class GetGaze : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.DownArrow)) // increase severity
             {
+                int previousSeverity = diseaseSeverity;
                 float change = rateOfChange * Time.fixedDeltaTime;
                 diseaseSeverity = Mathf.Clamp(diseaseSeverity + Mathf.RoundToInt(change), 0, 100);
-                ShowSeveritySlider();
+                if (diseaseSeverity != previousSeverity)
+                {
+                    ShowSeveritySlider();
+                    RegisterUserActivity();
+                }
             }
 
             if (Input.GetKey(KeyCode.UpArrow)) // decrease severity
             {
+                int previousSeverity = diseaseSeverity;
                 float change = rateOfChange * Time.fixedDeltaTime;
                 diseaseSeverity = Mathf.Clamp(diseaseSeverity - Mathf.RoundToInt(change), 0, 100);
-                ShowSeveritySlider();
+                if (diseaseSeverity != previousSeverity)
+                {
+                    ShowSeveritySlider();
+                    RegisterUserActivity();
+                }
             }
         }
     }

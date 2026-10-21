@@ -11,7 +11,7 @@ Simulates five types of vision loss:
 - **Oedema** - Visual distortion
 - **Diabetic Retinopathy** - Scattered hemorrhages, cotton wool spots, and macular edema
 
-The shader effects follow your gaze in real-time, providing an immersive experience of how these conditions affect daily activities. If an eye tracking is unavailable, it defaults to 'mouse' mode to simulate gaze. 
+The shader effects follow your gaze in real-time, providing an immersive experience of how these conditions affect daily activities. If no eye tracker is detected, the app uses the mouse to simulate gaze and shows a banner explaining that fallback. Optional **Mouse Mode** uses a separate banner when you choose mouse control explicitly. 
 
 ## Controls
 
