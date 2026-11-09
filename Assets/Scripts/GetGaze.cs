@@ -210,7 +210,9 @@ public class GetGaze : MonoBehaviour
         {
             UserPresence userPresence = TobiiAPI.GetUserPresence();
             GazePoint gazePoint = TobiiAPI.GetGazePoint();
-            bool hasValidSignal = userPresence.IsUserPresent() && gazePoint.IsRecent();
+            // Presence can report Unknown on some trackers (e.g. 4C) even while gaze is streaming,
+            // so only treat an explicit NotPresent as "no user".
+            bool hasValidSignal = userPresence != UserPresence.NotPresent && gazePoint.IsRecent();
 
             if (hasValidSignal)
             {
